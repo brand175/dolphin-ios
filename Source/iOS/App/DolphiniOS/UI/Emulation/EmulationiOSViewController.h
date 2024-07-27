@@ -11,6 +11,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint* metalHalfConstraint;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint* metalBottomConstraint;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint* GLHalfConstraint;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint* GLBottomConstraint;
 
 @property (weak, nonatomic) IBOutlet UIButton* pullDownButton;
 

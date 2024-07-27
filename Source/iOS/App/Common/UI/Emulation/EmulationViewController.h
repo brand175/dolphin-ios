@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #import <UIKit/UIKit.h>
-#import <MetalKit/MetalKit.h>
+#import <GLKit/GLKit.h>
 
 #import "Swift.h"
 

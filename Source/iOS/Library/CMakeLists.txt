@@ -5,7 +5,7 @@ add_library(dolphin SHARED
 )
 
 set_target_properties(dolphin PROPERTIES
-  LINK_FLAGS "-Wl,-all_load"
+  LINK_FLAGS "-Wl,-all_load,-undefined,dynamic_lookup"
 )
 
 target_link_libraries(dolphin
@@ -13,4 +13,10 @@ PUBLIC
   common
   core
   uicommon
+)
+
+target_link_libraries(dolphin
+PRIVATE
+${COCOA_TOUCH_LIBRARY}
+${OPENGL_LIBRARY}
 )

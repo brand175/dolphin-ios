@@ -249,7 +249,7 @@
       self.rendererView.alpha = 0.0f;
     } completion:^(bool) {
       if (![EmulationCoordinator shared].isExternalDisplayConnected) {
-        [[EmulationCoordinator shared] clearMetalLayer];
+       // [[EmulationCoordinator shared] clearMetalLayer];
       }
       
       [self.navigationController dismissViewControllerAnimated:true completion:nil];

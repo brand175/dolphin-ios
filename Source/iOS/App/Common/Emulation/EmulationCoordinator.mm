@@ -3,7 +3,7 @@
 
 #import "EmulationCoordinator.h"
 
-#import <MetalKit/MetalKit.h>
+#import <GLKit/GLKit.h>
 
 #import "Common/WindowSystemInfo.h"
 
@@ -19,8 +19,8 @@
 #import "HostQueue.h"
 
 @implementation EmulationCoordinator {
-  MTKView* _mtkView;
-  CAMetalLayer* _metalLayer;
+  GLKView* _mtkView;
+  CAEAGLLayer* _metalLayer;
   UIView* _mainDisplayView;
 }
 
@@ -39,11 +39,10 @@
 
 - (id)init {
   if (self = [super init]) {
-    _mtkView = [[MTKView alloc] init];
-    _mtkView.preferredFramesPerSecond = 10000;
+    _mtkView = [[GLKView alloc] init];
     _mtkView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     
-    _metalLayer = (CAMetalLayer*)_mtkView.layer;
+    _metalLayer = (CAEAGLLayer*)_mtkView.layer;
     
     self.isExternalDisplayConnected = false;
   }
@@ -139,30 +138,6 @@
   });
   
   _userRequestedPause = userRequestedPause;
-}
-
-- (void)clearMetalLayer {
-  id<CAMetalDrawable> drawable = [_metalLayer nextDrawable];
-  
-  if (drawable == nil) {
-    return;
-  }
-  
-  MTLRenderPassDescriptor* renderPass = [MTLRenderPassDescriptor renderPassDescriptor];
-  renderPass.colorAttachments[0].texture = drawable.texture;
-  renderPass.colorAttachments[0].loadAction = MTLLoadActionClear;
-  renderPass.colorAttachments[0].storeAction = MTLStoreActionStore;
-  renderPass.colorAttachments[0].clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
-  
-  id<MTLCommandQueue> commandQueue = [_mtkView.preferredDevice newCommandQueue];
-  id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
-  
-  id<MTLRenderCommandEncoder> commandEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPass];
-  commandEncoder.label = @"Clear";
-  [commandEncoder endEncoding];
- 
-  [commandBuffer presentDrawable:drawable];
-  [commandBuffer commit];
 }
 
 @end

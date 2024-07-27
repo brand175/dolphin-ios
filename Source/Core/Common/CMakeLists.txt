@@ -303,6 +303,11 @@ elseif(APPLE AND NOT IOS)
     GL/GLInterface/AGL.h
     GL/GLInterface/AGL.mm
   )
+elseif(IOS)
+  target_sources(common PRIVATE
+    GL/GLInterface/EAGL.h
+    GL/GLInterface/EAGL.mm
+  )
 elseif(HAIKU)
   target_sources(common PRIVATE
     GL/GLInterface/BGL.h
