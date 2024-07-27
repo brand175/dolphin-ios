@@ -64,6 +64,6 @@ class JitWaitViewController: UIViewController {
   
   @IBAction func cancelPressed(_ sender: Any) {
     self.timer?.invalidate()
-    self.delegate?.didFinishJitScreen(result: false, sender: self)
+    self.delegate?.didFinishJitScreen(result: true, sender: self)
   }
 }

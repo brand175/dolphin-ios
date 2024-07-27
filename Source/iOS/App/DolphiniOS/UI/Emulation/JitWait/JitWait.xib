@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23089" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23077"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -20,17 +20,17 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="W3E-IV-CzC" userLabel="Header Stack">
-                    <rect key="frame" x="0.0" y="20" width="375" height="167"/>
+                    <rect key="frame" x="0.0" y="40" width="375" height="162"/>
                     <subviews>
-                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bolt.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="IUQ-qk-Kke">
+                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bolt.slash.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="IUQ-qk-Kke">
                             <rect key="frame" x="0.0" y="-1" width="375" height="101.5"/>
                             <color key="tintColor" systemColor="systemBlueColor"/>
                             <constraints>
                                 <constraint firstAttribute="height" constant="100" id="hmP-nM-OsB"/>
                             </constraints>
                         </imageView>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Waiting for JIT" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MKg-MP-jJG">
-                            <rect key="frame" x="0.0" y="100" width="375" height="67"/>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="SLOW WARNING!!!!!" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MKg-MP-jJG">
+                            <rect key="frame" x="0.0" y="100" width="375" height="62"/>
                             <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="34"/>
                             <nil key="textColor"/>
                             <nil key="highlightedColor"/>
@@ -38,14 +38,14 @@
                     </subviews>
                 </stackView>
                 <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uo7-Aa-Z1e">
-                    <rect key="frame" x="0.0" y="187" width="375" height="340"/>
+                    <rect key="frame" x="0.0" y="202" width="375" height="325"/>
                     <subviews>
                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="90n-Az-9Cs" userLabel="Content Stack">
-                            <rect key="frame" x="20" y="0.0" width="335" height="324.5"/>
+                            <rect key="frame" x="20" y="0.0" width="335" height="284"/>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4Lp-si-dj1" userLabel="Warning Text">
-                                    <rect key="frame" x="1.5" y="0.0" width="332.5" height="304.5"/>
-                                    <string key="text">DolphiniOS is waiting for a remote debugger to connect before emulation can start. You will not be able to play until the debugger is connected.
+                                    <rect key="frame" x="0.0" y="0.0" width="335" height="264"/>
+                                    <string key="text">DolphiniOS will be very slow unless you have JIT.
 
 DolphiniOS uses a technique called "JIT" to emulate the GameCube and Wii's CPU at fast speeds. Without JIT, DolphiniOS would run at unplayably slow speeds.
 
@@ -57,7 +57,7 @@ For more information, press "Help".</string>
                                     <nil key="highlightedColor"/>
                                 </label>
                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6uo-Rc-2vE">
-                                    <rect key="frame" x="47.5" y="324.5" width="240" height="0.0"/>
+                                    <rect key="frame" x="47.5" y="284" width="240" height="0.0"/>
                                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                     <constraints>
                                         <constraint firstAttribute="height" id="kge-k2-qnG"/>
@@ -111,7 +111,7 @@ For more information, press "Help".</string>
                                                 <constraint firstAttribute="height" constant="45" id="j1f-m3-E7Q"/>
                                             </constraints>
                                             <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
-                                            <state key="normal" title="Cancel">
+                                            <state key="normal" title="Play">
                                                 <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </state>
                                             <userDefinedRuntimeAttributes>
@@ -156,7 +156,7 @@ For more information, press "Help".</string>
         </view>
     </objects>
     <resources>
-        <image name="bolt.fill" catalog="system" width="101" height="128"/>
+        <image name="bolt.slash.fill" catalog="system" width="98" height="128"/>
         <systemColor name="linkColor">
             <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>

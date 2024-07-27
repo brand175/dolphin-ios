@@ -231,12 +231,6 @@ std::unique_ptr<VertexLoaderBase> VertexLoaderBase::CreateVertexLoader(const TVt
 
   // #define COMPARE_VERTEXLOADERS
 
-#if defined(_M_X86_64)
-  loader = std::make_unique<VertexLoaderX64>(vtx_desc, vtx_attr);
-#elif defined(_M_ARM_64)
-  loader = std::make_unique<VertexLoaderARM64>(vtx_desc, vtx_attr);
-#endif
-
   // Use the software loader as a fallback
   // (not currently applicable, as both VertexLoaderX64 and VertexLoaderARM64
   // are always usable, but if a loader that only works on some CPUs is created

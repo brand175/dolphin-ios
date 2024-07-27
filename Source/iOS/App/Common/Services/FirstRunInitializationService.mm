@@ -48,6 +48,7 @@
     [self importDefaultProfileForInputConfig:Wiimote::GetConfig()];
     
     Config::SetBase(Config::MAIN_GFX_BACKEND, "Metal");
+    Config::SetBase(Config::MAIN_CPU_CORE, PowerPC::CPUCore(5));
     
     [[BootNoticeManager shared] enqueueViewController:[[UnofficialBuildNoticeViewController alloc] initWithNibName:@"UnofficialBuildNotice" bundle:nil]];
   }
