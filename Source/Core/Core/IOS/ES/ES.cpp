@@ -113,7 +113,7 @@ ESDevice::ESDevice(EmulationKernel& ios, ESCore& core, const std::string& device
     : EmulationDevice(ios, device_name), m_core(core)
 {
   auto& system = ios.GetSystem();
-  if (Core::IsRunning())
+  if (Core::IsRunning(system))
   {
     auto& core_timing = system.GetCoreTiming();
     core_timing.RemoveEvent(s_finish_init_event);
@@ -446,7 +446,7 @@ bool ESDevice::LaunchPPCTitle(u64 title_id)
     }
 
     const u64 required_ios = tmd.GetIOSId();
-    if (!Core::IsRunning())
+    if (!Core::IsRunning(system))
       return LaunchTitle(required_ios, HangPPC::Yes);
     core_timing.RemoveEvent(s_reload_ios_for_ppc_launch_event);
     core_timing.ScheduleEvent(ticks, s_reload_ios_for_ppc_launch_event, required_ios);
@@ -475,7 +475,7 @@ bool ESDevice::LaunchPPCTitle(u64 title_id)
     return false;
 
   m_pending_ppc_boot_content_path = m_core.GetContentPath(tmd.GetTitleId(), content);
-  if (!Core::IsRunning())
+  if (!Core::IsRunning(system))
     return BootstrapPPC();
 
   INFO_LOG_FMT(ACHIEVEMENTS,
@@ -527,14 +527,13 @@ void ESDevice::DoState(PointerWrap& p)
 
 ESDevice::ContextArray::iterator ESDevice::FindActiveContext(s32 fd)
 {
-  return std::find_if(m_contexts.begin(), m_contexts.end(),
-                      [fd](const auto& context) { return context.ipc_fd == fd && context.active; });
+  return std::ranges::find_if(
+      m_contexts, [fd](const auto& context) { return context.ipc_fd == fd && context.active; });
 }
 
 ESDevice::ContextArray::iterator ESDevice::FindInactiveContext()
 {
-  return std::find_if(m_contexts.begin(), m_contexts.end(),
-                      [](const auto& context) { return !context.active; });
+  return std::ranges::find_if(m_contexts, [](const auto& context) { return !context.active; });
 }
 
 std::optional<IPCReply> ESDevice::Open(const OpenRequest& request)

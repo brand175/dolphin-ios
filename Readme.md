@@ -11,6 +11,10 @@ This is based off ([https://github.com/OatmealDome/dolphin-ios](https://github.c
 
 ## Enabling JIT
 * For Windows - https://github.com/fritzlb/iOS17-JIT-WIN
+
+  * Python 3.12.2 (Exact Version) - https://www.python.org/ftp/python/3.12.2/python-3.12.2-amd64.exe
+  * iTunes installed
+  
 * for MacOS - Use Xcode's debugger process
 
 ## Requirements for Building iOS
@@ -55,7 +59,7 @@ Please read the [FAQ](https://dolphin-emu.org/docs/faq/) before using Dolphin.
 ### Desktop
 
 * OS
-    * Windows (10 or higher).
+    * Windows (10 1703 or higher).
     * Linux.
     * macOS (10.15 Catalina or higher).
     * Unix-like systems other than Linux are not officially supported but might work.
@@ -311,7 +315,7 @@ Options:
                         Path to disc image FILE.
   -a ALGORITHM, --algorithm=ALGORITHM
                         Optional. Compute and print the digest using the
-                        selected algorithm, then exit. [crc32|md5|sha1]
+                        selected algorithm, then exit. [crc32|md5|sha1|rchash]
 ```
 
 ```

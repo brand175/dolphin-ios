@@ -105,6 +105,7 @@ option(USE_DISCORD_PRESENCE "Enables Discord Rich Presence, show the current gam
 option(USE_MGBA "Enables GBA controllers emulation using libmgba" ON)
 option(ENABLE_AUTOUPDATE "Enables support for automatic updates" ON)
 option(USE_RETRO_ACHIEVEMENTS "Enables integration with retroachievements.org" ON)
+option(ENABLE_CUBEB "Enables Cubeb sound backend" ON)
 
 # Maintainers: if you consider blanket disabling this for your users, please
 # consider the following points:
@@ -123,7 +124,7 @@ option(OPROFILING "Enable profiling" OFF)
 # TODO: Add DSPSpy
 option(DSPTOOL "Build dsptool" OFF)
 
-# Enable SDL by default on operating systems that aren't Android or iOS.
+# Enable SDL by default on operating systems that aren't Android or iOS
 if(NOT ANDROID AND NOT IOS)
   option(ENABLE_SDL "Enables SDL as a generic controller backend" ON)
 else()
@@ -476,6 +477,7 @@ if(IOS)
   set(ENABLE_NOGUI 0)
   set(ENABLE_QT 0)
   set(ENABLE_AUTOUPDATE 0)
+  set(ENABLE_CUBEB 0)
   set(USE_DISCORD_PRESENCE 0)
 
   # We are cross compiling, search only the toolchain for libraries and includes
@@ -617,7 +619,7 @@ if(UNIX)
 endif()
 
 if(ENABLE_SDL)
-  dolphin_find_optional_system_library(SDL2 Externals/SDL 2.30.6)
+  dolphin_find_optional_system_library(SDL2 Externals/SDL 2.30.9)
 endif()
 
 if(ENABLE_ANALYTICS)
@@ -685,8 +687,8 @@ if(ENABLE_VULKAN)
   endif()
 endif()
 
-if (NOT (WIN32 AND CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64"))
-  # OpenGL is available on all platforms except windows-arm64
+if (NOT (WIN32 AND CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64") AND NOT IOS)
+  # OpenGL is available on all platforms except windows-arm64 and iOS
   add_definitions(-DHAS_OPENGL)
 endif()
 
@@ -704,7 +706,7 @@ dolphin_make_imported_target_if_missing(LibLZMA::LibLZMA LIBLZMA)
 
 dolphin_find_optional_system_library_pkgconfig(ZSTD libzstd>=1.4.0 zstd::zstd Externals/zstd)
 
-dolphin_find_optional_system_library_pkgconfig(ZLIB zlib-ng ZLIB::ZLIB Externals/zlib-ng)
+add_subdirectory(Externals/zlib-ng)
 
 dolphin_find_optional_system_library_pkgconfig(MINIZIP
   "minizip>=4.0.4" minizip::minizip Externals/minizip-ng
@@ -732,8 +734,8 @@ endif()
 add_subdirectory(Externals/soundtouch)
 include_directories(Externals/soundtouch)
 
-if(NOT ANDROID AND NOT IOS)
-dolphin_find_optional_system_library(CUBEB Externals/cubeb)
+if(ENABLE_CUBEB)
+  dolphin_find_optional_system_library(CUBEB Externals/cubeb)
 endif()
 
 if(NOT ANDROID AND NOT IOS)

@@ -8,6 +8,7 @@
 
 #include "Core/Core.h"
 #include "Core/Host.h"
+#include "Core/System.h"
 
 #include "HostNotifications.h"
 #include "HostQueue.h"
@@ -21,6 +22,10 @@ void Host_PPCSymbolsChanged()
 {
 }
 
+void Host_PPCBreakpointsChanged()
+{
+}
+
 void Host_RefreshDSPDebuggerWindow()
 {
 }
@@ -30,12 +35,12 @@ void Host_Message(HostMessageID message)
   if (message == HostMessageID::WMUserJobDispatch)
   {
     DOLHostQueueRunAsync(^{
-      Core::HostDispatchJobs();
+      Core::HostDispatchJobs(Core::System::GetInstance());
     });
   }
   else if (message == HostMessageID::WMUserStop)
   {
-    if (Core::IsRunning())
+    if (Core::IsRunning(Core::System::GetInstance()))
     {
       Core::QueueHostJob(&Core::Stop);
     }
@@ -62,6 +67,14 @@ bool Host_UpdateDiscordPresenceRaw(const std::string& details, const std::string
 }
 
 void Host_UpdateDisasmDialog()
+{
+}
+
+void Host_JitCacheInvalidation()
+{
+}
+
+void Host_JitProfileDataWiped()
 {
 }
 
