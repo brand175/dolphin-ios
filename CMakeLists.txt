@@ -687,8 +687,8 @@ if(ENABLE_VULKAN)
   endif()
 endif()
 
-if (NOT (WIN32 AND CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64") AND NOT IOS)
-  # OpenGL is available on all platforms except windows-arm64 and iOS
+if (NOT (WIN32 AND CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64"))
+  # OpenGL is available on all platforms except windows-arm64
   add_definitions(-DHAS_OPENGL)
 endif()
 
