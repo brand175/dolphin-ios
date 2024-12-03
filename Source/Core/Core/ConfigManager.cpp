@@ -114,7 +114,7 @@ void SConfig::SetRunningGameMetadata(const DiscIO::Volume& volume,
   }
   else
   {
-    SetRunningGameMetadata(volume.GetGameID(partition), volume.GetGameTDBID(),
+    SetRunningGameMetadata(volume.GetGameID(partition), volume.GetGameTDBID(partition),
                            volume.GetTitleID(partition).value_or(0),
                            volume.GetRevision(partition).value_or(0), volume.GetRegion());
   }
@@ -186,9 +186,9 @@ void SConfig::SetRunningGameMetadata(const std::string& game_id, const std::stri
   NOTICE_LOG_FMT(CORE, "Active title: {}", m_title_description);
   Host_TitleChanged();
 
-  const bool is_running_or_starting = Core::IsRunningOrStarting();
+  const bool is_running_or_starting = Core::IsRunningOrStarting(system);
   if (is_running_or_starting)
-    Core::UpdateTitle();
+    Core::UpdateTitle(system);
 
   Config::AddLayer(ConfigLoaders::GenerateGlobalGameConfigLoader(game_id, revision));
   Config::AddLayer(ConfigLoaders::GenerateLocalGameConfigLoader(game_id, revision));
@@ -200,7 +200,7 @@ void SConfig::SetRunningGameMetadata(const std::string& game_id, const std::stri
 void SConfig::OnNewTitleLoad(const Core::CPUThreadGuard& guard)
 {
   auto& system = guard.GetSystem();
-  if (!Core::IsRunningOrStarting())
+  if (!Core::IsRunningOrStarting(system))
     return;
 
   auto& ppc_symbol_db = system.GetPPCSymbolDB();
@@ -211,7 +211,7 @@ void SConfig::OnNewTitleLoad(const Core::CPUThreadGuard& guard)
   }
   CBoot::LoadMapFromFilename(guard, ppc_symbol_db);
   HLE::Reload(system);
-  PatchEngine::Reload();
+  PatchEngine::Reload(system);
   HiresTexture::Update();
   WC24PatchEngine::Reload();
 }
@@ -265,7 +265,7 @@ struct SetGameMetadata
     std::string executable_path = executable.path;
     constexpr char BACKSLASH = '\\';
     constexpr char FORWARDSLASH = '/';
-    std::replace(executable_path.begin(), executable_path.end(), BACKSLASH, FORWARDSLASH);
+    std::ranges::replace(executable_path, BACKSLASH, FORWARDSLASH);
     config->SetRunningGameMetadata(SConfig::MakeGameID(PathToFileName(executable_path)));
 
     Host_TitleChanged();
