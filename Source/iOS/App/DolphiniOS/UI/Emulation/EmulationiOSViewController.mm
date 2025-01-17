@@ -4,6 +4,7 @@
 #import "EmulationiOSViewController.h"
 
 #import "Core/ConfigManager.h"
+#import "Core/Config/iOSSettings.h"
 #import "Core/Config/MainSettings.h"
 #import "Core/Config/WiimoteSettings.h"
 #import "Core/HW/GCPad.h"
@@ -66,12 +67,15 @@ typedef NS_ENUM(NSInteger, DOLEmulationVisibleTouchPad) {
       [virtualMfi connectControllerToView:self.view];
     }
   }
+  
+  _stateSlot = Config::GetBase(Config::MAIN_SELECTED_STATE_SLOT);
 }
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receiveTitleChangedNotificationiOS) name:DOLHostTitleChangedNotification object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receiveRequestRenderWindowSizeNotificationiOS) name:DOLHostRequestRenderWindowSizeNotification object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receiveEmulationEndNotificationiOS) name:DOLEmulationDidEndNotification object:nil];
 }
 
@@ -79,14 +83,20 @@ typedef NS_ENUM(NSInteger, DOLEmulationVisibleTouchPad) {
   [super viewDidDisappear:animated];
   
   [[NSNotificationCenter defaultCenter] removeObserver:self name:DOLHostTitleChangedNotification object:nil];
+  [[NSNotificationCenter defaultCenter] removeObserver:self name:DOLHostRequestRenderWindowSizeNotification object:nil];
   [[NSNotificationCenter defaultCenter] removeObserver:self name:DOLEmulationDidEndNotification object:nil];
 }
 
 - (void)recreateMenu {
-  NSMutableArray<UIAction*>* controllerActions = [[NSMutableArray alloc] init];
+  NSMutableArray<UIMenuElement*>* controllerActions = [[NSMutableArray alloc] init];
   
-  if ([self isWiimoteTouchPadAttached] && Core::System::GetInstance().IsWii()) {
-    UIAction* wiimoteAction = [UIAction actionWithTitle:DOLCoreLocalizedString(@"Wii Remote") image:[UIImage systemImageNamed:@"gamecontroller"] identifier:nil handler:^(UIAction*) {
+  NSMutableArray<UIMenuElement*>* visibleControllerActions = [[NSMutableArray alloc] init];
+  
+  bool wiimoteTouchPadAttached = [self isWiimoteTouchPadAttached] && Core::System::GetInstance().IsWii();
+  bool gamecubeTouchPadAttached = [self isGameCubeTouchPadAttached];
+  
+  if (wiimoteTouchPadAttached) {
+    UIAction* wiimoteAction = [UIAction actionWithTitle:DOLCoreLocalizedString(@"Wii Remote") image:nil identifier:nil handler:^(UIAction*) {
       [self updateVisibleTouchPadToWii];
       [self recreateMenu];
       
@@ -101,11 +111,11 @@ typedef NS_ENUM(NSInteger, DOLEmulationVisibleTouchPad) {
       wiimoteAction.state = UIMenuElementStateOff;
     }
     
-    [controllerActions addObject:wiimoteAction];
+    [visibleControllerActions addObject:wiimoteAction];
   }
   
-  if ([self isGameCubeTouchPadAttached]) {
-    UIAction* gamecubeAction = [UIAction actionWithTitle:DOLCoreLocalizedString(@"GameCube Controller") image:[UIImage systemImageNamed:@"gamecontroller"] identifier:nil handler:^(UIAction*) {
+  if (gamecubeTouchPadAttached) {
+    UIAction* gamecubeAction = [UIAction actionWithTitle:DOLCoreLocalizedString(@"GameCube Controller") image:nil identifier:nil handler:^(UIAction*) {
       [self updateVisibleTouchPadToGameCube];
       [self recreateMenu];
       
@@ -118,11 +128,11 @@ typedef NS_ENUM(NSInteger, DOLEmulationVisibleTouchPad) {
       gamecubeAction.state = UIMenuElementStateOff;
     }
     
-    [controllerActions addObject:gamecubeAction];
+    [visibleControllerActions addObject:gamecubeAction];
   }
   
-  if ([controllerActions count] > 0) {
-    UIAction* noneAction = [UIAction actionWithTitle:DOLCoreLocalizedString(@"Hide") image:[UIImage systemImageNamed:@"x.circle"] identifier:nil handler:^(UIAction*) {
+  if (wiimoteTouchPadAttached || gamecubeTouchPadAttached) {
+    UIAction* noneAction = [UIAction actionWithTitle:DOLCoreLocalizedString(@"Hide") image:nil identifier:nil handler:^(UIAction*) {
       [self updateVisibleTouchPadWithType:DOLEmulationVisibleTouchPadNone];
       [self recreateMenu];
       
@@ -135,12 +145,66 @@ typedef NS_ENUM(NSInteger, DOLEmulationVisibleTouchPad) {
       noneAction.state = UIMenuElementStateOff;
     }
     
-    [controllerActions addObject:noneAction];
+    [visibleControllerActions addObject:noneAction];
   }
+  
+  UIMenu* visibleControllerMenu = [UIMenu menuWithTitle:@"Touch Controller" image:[UIImage systemImageNamed:@"gamecontroller"] identifier:nil options:0 children:visibleControllerActions];
+  [controllerActions addObject:visibleControllerMenu];
+  
+  if (wiimoteTouchPadAttached) {
+    TCWiiTouchIRMode irMode = (TCWiiTouchIRMode)Config::Get(Config::MAIN_TOUCH_PAD_IR_MODE);
+    
+    UIMenu* menu = [UIMenu menuWithTitle:@"Touch IR Pointer" image:[UIImage systemImageNamed:@"hand.point.up.left"] identifier:nil options:0 children:@[
+      [UIAction actionWithTitle:@"Disabled" image:nil identifier:nil handler:^(UIAction*) {
+        Config::SetBaseOrCurrent(Config::MAIN_TOUCH_PAD_IR_MODE, TCWiiTouchIRModeNone);
+        
+        [self updatePointerValuesOnWiiTouchPads];
+        [self recreateMenu];
+        
+        [self.navigationController setNavigationBarHidden:true animated:true];
+      }],
+      [UIAction actionWithTitle:@"Follow" image:nil identifier:nil handler:^(UIAction*) {
+        Config::SetBaseOrCurrent(Config::MAIN_TOUCH_PAD_IR_MODE, TCWiiTouchIRModeFollow);
+        
+        [self updatePointerValuesOnWiiTouchPads];
+        [self recreateMenu];
+        
+        [self.navigationController setNavigationBarHidden:true animated:true];
+      }],
+      [UIAction actionWithTitle:@"Drag" image:nil identifier:nil handler:^(UIAction*) {
+        Config::SetBaseOrCurrent(Config::MAIN_TOUCH_PAD_IR_MODE, TCWiiTouchIRModeDrag);
+        
+        [self updatePointerValuesOnWiiTouchPads];
+        [self recreateMenu];
+        
+        [self.navigationController setNavigationBarHidden:true animated:true];
+      }]
+    ]];
+    
+    UIAction* selectedAction = (UIAction*)menu.children[(int)irMode];
+    selectedAction.state = UIMenuElementStateOn;
+    
+    [controllerActions addObject:menu];
+  }
+  
+  NSMutableArray<UIMenuElement*>* stateSlotActions = [[NSMutableArray alloc] init];
+  
+  for (int i = 1; i <= State::NUM_STATES; i++) {
+    [stateSlotActions addObject:[UIAction actionWithTitle:[NSString stringWithFormat:@"Slot %d", i] image:nil identifier:nil handler:^(UIAction* action) {
+      self->_stateSlot = i;
+      Config::SetBase(Config::MAIN_SELECTED_STATE_SLOT, i);
+      
+      [self recreateMenu];
+    }]];
+  }
+  
+  UIAction* selectedSlotElement = (UIAction*)[stateSlotActions objectAtIndex:Config::GetBase(Config::MAIN_SELECTED_STATE_SLOT) - 1];
+  selectedSlotElement.state = UIMenuElementStateOn;
   
   self.navigationItem.leftBarButtonItem.menu = [UIMenu menuWithChildren:@[
     [UIMenu menuWithTitle:DOLCoreLocalizedString(@"Controllers") image:nil identifier:nil options:UIMenuOptionsDisplayInline children:controllerActions],
     [UIMenu menuWithTitle:DOLCoreLocalizedString(@"Save State") image:nil identifier:nil options:UIMenuOptionsDisplayInline children:@[
+      [UIMenu menuWithTitle:DOLCoreLocalizedString(@"Select State Slot") image:nil identifier:nil options:0 children:stateSlotActions],
       [UIAction actionWithTitle:DOLCoreLocalizedString(@"Load State") image:[UIImage systemImageNamed:@"tray.and.arrow.down"] identifier:nil handler:^(UIAction*) {
         DOLHostQueueRunAsync(^{
           State::Load(Core::System::GetInstance(), self->_stateSlot);
@@ -165,6 +229,8 @@ typedef NS_ENUM(NSInteger, DOLEmulationVisibleTouchPad) {
   }
   
   [[TCDeviceMotion shared] statusBarOrientationChanged];
+  
+  [self updatePointerValuesOnWiiTouchPads];
 }
 
 - (BOOL)prefersHomeIndicatorAutoHidden {
@@ -180,6 +246,14 @@ typedef NS_ENUM(NSInteger, DOLEmulationVisibleTouchPad) {
     }
     
     [self recreateMenu];
+  });
+}
+
+- (void)receiveRequestRenderWindowSizeNotificationiOS {
+  dispatch_async(dispatch_get_main_queue(), ^{
+    if (Core::System::GetInstance().IsWii()) {
+      [self updatePointerValuesOnWiiTouchPads];
+    }
   });
 }
 
@@ -236,6 +310,8 @@ typedef NS_ENUM(NSInteger, DOLEmulationVisibleTouchPad) {
   }
   
   [self updateVisibleTouchPadWithType:targetTouchPad];
+  
+  [self updatePointerValuesOnWiiTouchPads];
 }
 
 - (void)updateVisibleTouchPadToGameCube {
@@ -267,23 +343,47 @@ typedef NS_ENUM(NSInteger, DOLEmulationVisibleTouchPad) {
     padView.userInteractionEnabled = i == targetIdx;
   }
   
+  const float targetOpacity = Config::Get(Config::MAIN_TOUCH_PAD_OPACITY);
+  
   [UIView animateWithDuration:0.5f animations:^{
     for (int i = 0; i < [self.touchPads count]; i++) {
       TCView* padView = self.touchPads[i];
-      padView.alpha = i == targetIdx ? 1.0f : 0.0f;
+      padView.alpha = i == targetIdx ? targetOpacity : 0.0f;
     }
   }];
   
   _visibleTouchPad = touchPad;
 }
 
+- (void)updatePointerValuesOnWiiTouchPads {
+  if (!g_presenter) {
+    return;
+  }
+  
+  TCWiiTouchIRMode irMode = TCWiiTouchIRModeNone;
+  
+  if ([self isWiimoteTouchPadAttached]) {
+    irMode = (TCWiiTouchIRMode)Config::Get(Config::MAIN_TOUCH_PAD_IR_MODE);
+    
+    ControllerEmu::ControlGroup* group = Wiimote::GetWiimoteGroup(0, WiimoteEmu::WiimoteGroup::IMUPoint);
+    group->enabled = irMode == TCWiiTouchIRModeNone;
+  }
+  
+  for (int i = 0; i < [self.touchPads count]; i++) {
+    TCView* padView = self.touchPads[i];
+    
+    if ([padView isKindOfClass:[TCWiiPad class]]) {
+      TCWiiPad* wiiPadView = (TCWiiPad*)padView;
+      
+      [wiiPadView setTouchIRMode:irMode];
+      [wiiPadView resetPointer];
+      [wiiPadView recalculatePointerValuesWithNew_rect:self.rendererView.bounds game_aspect:g_presenter->CalculateDrawAspectRatio()];
+    }
+  }
+}
+
 - (IBAction)pullDownPressed:(id)sender {
   [self updateNavigationBar:false];
-  
-  // Automatic hide after 5 seconds
-  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-    [self updateNavigationBar:true];
-  });
 }
 
 - (void)receiveEmulationEndNotificationiOS {

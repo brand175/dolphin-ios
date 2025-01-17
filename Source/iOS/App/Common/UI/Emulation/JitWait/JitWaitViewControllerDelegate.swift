@@ -3,6 +3,12 @@
 
 import Foundation
 
+@objc enum JitWaitViewControllerResult: Int {
+  case jitAcquired
+  case noJitRequested
+  case cancel
+}
+
 @objc protocol JitWaitViewControllerDelegate : AnyObject {
-  func didFinishJitScreen(result: Bool, sender: Any)
+  func didFinishJitScreen(result: JitWaitViewControllerResult, sender: Any)
 }

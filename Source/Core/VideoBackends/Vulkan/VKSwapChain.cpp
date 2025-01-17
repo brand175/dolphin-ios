@@ -154,7 +154,7 @@ bool SwapChain::SelectSurfaceFormat()
                                              &format_count, surface_formats.data());
   ASSERT(res == VK_SUCCESS);
 
-#if defined(IPHONEOS)
+  #if defined(IPHONEOS)
   // If there is a single undefined surface format, the device doesn't care, so we'll just use RGBA
   if (surface_formats[0].format == VK_FORMAT_UNDEFINED)
   {
@@ -182,6 +182,7 @@ bool SwapChain::SelectSurfaceFormat()
     return true;
   }
 #else
+
   // If there is a single undefined surface format, the device doesn't care, so we'll just use RGBA8
   if (surface_formats[0].format == VK_FORMAT_UNDEFINED)
   {
@@ -247,7 +248,7 @@ bool SwapChain::SelectSurfaceFormat()
     m_surface_format.colorSpace = surface_format->colorSpace;
     return true;
   }
-#endif
+  #endif
 
   PanicAlertFmt("Failed to find a suitable format for swap chain buffers.");
   return false;

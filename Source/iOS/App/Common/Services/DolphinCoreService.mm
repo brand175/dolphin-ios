@@ -7,6 +7,7 @@
 #import "Core/Config/MainSettings.h"
 #import "Core/Config/GraphicsSettings.h"
 #import "Core/Core.h"
+#import "Core/DolphinAnalytics.h"
 #import "Core/HW/GCPad.h"
 #import "Core/HW/Wiimote.h"
 #import "Core/System.h"
@@ -61,16 +62,11 @@
   WindowSystemInfo wsi;
   wsi.type = WindowSystemType::iOS;
   
-  g_controller_interface.Initialize(wsi);
+  UICommon::InitControllers(wsi);
   
-  Pad::Initialize();
-  Wiimote::Initialize(Wiimote::InitializeMode::DO_NOT_WAIT_FOR_WIIMOTES);
-  
-  Wiimote::LoadConfig();
-  Wiimote::GetConfig()->SaveConfig();
-
-  Pad::LoadConfig();
-  Pad::GetConfig()->SaveConfig();
+  // This technically doesn't send any reports since we disabled analytics...
+  // However, it initializes DolphinAnalytics, which we need to do before starting any Wii games.
+  DolphinAnalytics::Instance().ReportDolphinStart("ios");
 
   return YES;
 }
@@ -109,13 +105,11 @@
       while (Core::GetState(Core::System::GetInstance()) != Core::State::Uninitialized) {}
     }
     
-    Pad::Shutdown();
-    Wiimote::Shutdown();
-    g_controller_interface.Shutdown();
-    
     Config::Save();
     
     Core::Shutdown(system);
+    
+    UICommon::ShutdownControllers();
     UICommon::Shutdown();
   });
 }

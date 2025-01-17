@@ -43,10 +43,12 @@
   self.stopButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(stopPressed)];
   self.pauseButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPause target:self action:@selector(pausePressed)];
   self.playButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPlay target:self action:@selector(playPressed)];
+  self.hideBarButton = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"eye.slash"] style:UIBarButtonItemStylePlain target:self action:@selector(hideBarPressed)];
   
   self.navigationItem.rightBarButtonItems = @[
     self.stopButton,
-    self.pauseButton
+    self.pauseButton,
+    self.hideBarButton
   ];
   
   [self.navigationController setNavigationBarHidden:true animated:true];
@@ -89,16 +91,21 @@
   [[NSNotificationCenter defaultCenter] removeObserver:self name:DOLEmulationDidEndNotification object:nil];
 }
 
-- (void)didFinishJitScreenWithResult:(BOOL)result sender:(id)sender {
+- (void)didFinishJitScreenWithResult:(JitWaitViewControllerResult)result sender:(id)sender {
   [self dismissViewControllerAnimated:true completion:^{
-    if (result) {
-      if ([self checkIfNeedToShowNKitWarning]) {
-        [self showNKitWarning];
-      } else {
-        [self startEmulation];
-      }
-    } else {
+    if (result == JitWaitViewControllerResultCancel) {
       [self.navigationController dismissViewControllerAnimated:true completion:nil];
+      return;
+    }
+    
+    if (result == JitWaitViewControllerResultNoJitRequested) {
+      Config::Set(Config::LayerType::CurrentRun, Config::MAIN_CPU_CORE, PowerPC::CPUCore::CachedInterpreter);
+    }
+    
+    if ([self checkIfNeedToShowNKitWarning]) {
+      [self showNKitWarning];
+    } else {
+      [self startEmulation];
     }
   }];
 }
@@ -194,7 +201,8 @@
   
   self.navigationItem.rightBarButtonItems = @[
     self.stopButton,
-    self.playButton
+    self.playButton,
+    self.hideBarButton
   ];
 }
 
@@ -207,8 +215,13 @@
   
   self.navigationItem.rightBarButtonItems = @[
     self.stopButton,
-    self.pauseButton
+    self.pauseButton,
+    self.hideBarButton
   ];
+}
+
+- (void)hideBarPressed {
+  [self updateNavigationBar:true];
 }
 
 - (void)receiveTitleChangedNotification {
