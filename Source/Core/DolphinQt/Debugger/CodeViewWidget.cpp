@@ -40,7 +40,6 @@
 #include "DolphinQt/Debugger/PatchInstructionDialog.h"
 #include "DolphinQt/Host.h"
 #include "DolphinQt/QtUtils/FromStdString.h"
-#include "DolphinQt/QtUtils/SetWindowDecorations.h"
 #include "DolphinQt/Resources.h"
 #include "DolphinQt/Settings.h"
 
@@ -433,13 +432,9 @@ void CodeViewWidget::CalculateBranchIndentation()
 
   // process in order of how much vertical space the drawn arrow would take up
   // so shorter arrows go further to the left
-  const auto priority = [](const CodeViewBranch& b) {
+  std::ranges::stable_sort(m_branches, {}, [](const CodeViewBranch& b) {
     return b.is_link ? 0 : (std::max(b.src_addr, b.dst_addr) - std::min(b.src_addr, b.dst_addr));
-  };
-  std::stable_sort(m_branches.begin(), m_branches.end(),
-                   [&priority](const CodeViewBranch& lhs, const CodeViewBranch& rhs) {
-                     return priority(lhs) < priority(rhs);
-                   });
+  });
 
   // build a 2D lookup table representing the columns and rows the arrow could be drawn in
   // and try to place all branch arrows in it as far left as possible
@@ -747,7 +742,6 @@ void CodeViewWidget::AutoStep(CodeTrace::AutoStop option)
             .arg(QString::fromStdString(fmt::format("{:#x}", fmt::join(mem_out, ", "))));
 
     msgbox.setInformativeText(msgtext);
-    SetQWidgetWindowDecorations(&msgbox);
     msgbox.exec();
 
   } while (msgbox.clickedButton() == (QAbstractButton*)run_button);
@@ -1035,7 +1029,6 @@ void CodeViewWidget::DoPatchInstruction(bool assemble)
   if (assemble)
   {
     AssembleInstructionDialog dialog(this, addr, debug_interface.ReadInstruction(guard, addr));
-    SetQWidgetWindowDecorations(&dialog);
     if (dialog.exec() == QDialog::Accepted)
     {
       debug_interface.SetPatch(guard, addr, dialog.GetCode());
@@ -1045,7 +1038,6 @@ void CodeViewWidget::DoPatchInstruction(bool assemble)
   else
   {
     PatchInstructionDialog dialog(this, addr, debug_interface.ReadInstruction(guard, addr));
-    SetQWidgetWindowDecorations(&dialog);
     if (dialog.exec() == QDialog::Accepted)
     {
       debug_interface.SetPatch(guard, addr, dialog.GetCode());
@@ -1089,6 +1081,11 @@ void CodeViewWidget::keyPressEvent(QKeyEvent* event)
     m_address += rowCount() * sizeof(u32);
     Update();
     return;
+  case Qt::Key_G:
+    if (event->modifiers() == Qt::ControlModifier)
+    {
+      emit ActivateSearch();
+    }
   default:
     QWidget::keyPressEvent(event);
     break;
