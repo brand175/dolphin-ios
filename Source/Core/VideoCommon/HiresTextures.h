@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "Common/CommonTypes.h"
-#include "VideoCommon/Assets/CustomResourceManager.h"
 #include "VideoCommon/Assets/CustomTextureData.h"
+#include "VideoCommon/Assets/TextureAsset.h"
 #include "VideoCommon/TextureConfig.h"
 #include "VideoCommon/TextureInfo.h"
 
@@ -27,13 +27,12 @@ public:
   static void Shutdown();
   static std::shared_ptr<HiresTexture> Search(const TextureInfo& texture_info);
 
-  HiresTexture(bool has_arbitrary_mipmaps, std::string id);
+  HiresTexture(bool has_arbitrary_mipmaps, std::shared_ptr<VideoCommon::GameTextureAsset> asset);
 
   bool HasArbitraryMipmaps() const { return m_has_arbitrary_mipmaps; }
-  VideoCommon::CustomResourceManager::TextureTimePair LoadTexture() const;
-  const std::string& GetId() const { return m_id; }
+  const std::shared_ptr<VideoCommon::GameTextureAsset>& GetAsset() const { return m_game_texture; }
 
 private:
   bool m_has_arbitrary_mipmaps = false;
-  std::string m_id;
+  std::shared_ptr<VideoCommon::GameTextureAsset> m_game_texture;
 };
