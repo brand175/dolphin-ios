@@ -41,7 +41,6 @@
 #endif
 
 #include "VideoCommon/AbstractGfx.h"
-#include "VideoCommon/Assets/CustomResourceManager.h"
 #include "VideoCommon/AsyncRequests.h"
 #include "VideoCommon/BPStructs.h"
 #include "VideoCommon/BoundingBox.h"
@@ -342,16 +341,12 @@ bool VideoBackendBase::InitializeShared(std::unique_ptr<AbstractGfx> gfx,
   }
 
   g_shader_cache->InitializeShaderCache();
-  system.GetCustomResourceManager().Initialize();
 
   return true;
 }
 
 void VideoBackendBase::ShutdownShared()
 {
-  auto& system = Core::System::GetInstance();
-  system.GetCustomResourceManager().Shutdown();
-
   g_frame_dumper.reset();
   g_presenter.reset();
 
@@ -374,6 +369,7 @@ void VideoBackendBase::ShutdownShared()
 
   m_initialized = false;
 
+  auto& system = Core::System::GetInstance();
   VertexLoaderManager::Clear();
   system.GetFifo().Shutdown();
 }
