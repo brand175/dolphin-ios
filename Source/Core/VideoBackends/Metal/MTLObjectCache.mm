@@ -57,7 +57,7 @@ void Metal::ObjectCache::Shutdown()
 
 static MTLCompareFunction Convert(CompareMode mode)
 {
-  const bool invert_depth = !g_backend_info.bSupportsReversedDepthRange;
+  const bool invert_depth = !g_Config.backend_info.bSupportsReversedDepthRange;
   switch (mode)
   {
   case CompareMode::Never:   return MTLCompareFunctionNever;
@@ -171,12 +171,12 @@ MRCOwned<id<MTLSamplerState>> Metal::ObjectCache::CreateSampler(SamplerSelector 
     [desc setMipFilter:ConvertMip(sel.MipFilter())];
     [desc setSAddressMode:Convert(sel.WrapU())];
     [desc setTAddressMode:Convert(sel.WrapV())];
-    [desc setMaxAnisotropy:1 << sel.AnisotropicFiltering()];
+    [desc setMaxAnisotropy:1 << (sel.AnisotropicFiltering() ? g_ActiveConfig.iMaxAnisotropy : 0)];
     [desc setLabel:MRCTransfer([[NSString alloc]
-                       initWithFormat:@"%s%s%s %s%s%d", to_string(sel.MinFilter()),
+                       initWithFormat:@"%s%s%s %s%s%s", to_string(sel.MinFilter()),
                                       to_string(sel.MagFilter()), to_string(sel.MipFilter()),
                                       to_string(sel.WrapU()), to_string(sel.WrapV()),
-                                      1 << sel.AnisotropicFiltering()])];
+                                      sel.AnisotropicFiltering() ? "(AF)" : ""])];
     return MRCTransfer([Metal::g_device newSamplerStateWithDescriptor:desc]);
   }
 }

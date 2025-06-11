@@ -106,8 +106,6 @@ struct TransferCommand
   {
   }
   virtual ~TransferCommand() = default;
-
-  EmulationKernel& GetEmulationKernel() const;
   // Called after a transfer has completed to reply to the IPC request.
   // This can be overridden for additional processing before replying.
   virtual void OnTransferComplete(s32 return_value) const;

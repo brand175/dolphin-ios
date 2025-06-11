@@ -10,8 +10,16 @@
 
 #include "Common/BitUtils.h"
 #include "Common/CommonTypes.h"
-#include "Common/VariantUtil.h"
 
+#include "Core/HW/WiimoteEmu/Extension/Classic.h"
+#include "Core/HW/WiimoteEmu/Extension/DrawsomeTablet.h"
+#include "Core/HW/WiimoteEmu/Extension/Drums.h"
+#include "Core/HW/WiimoteEmu/Extension/Guitar.h"
+#include "Core/HW/WiimoteEmu/Extension/Nunchuk.h"
+#include "Core/HW/WiimoteEmu/Extension/Shinkansen.h"
+#include "Core/HW/WiimoteEmu/Extension/TaTaCon.h"
+#include "Core/HW/WiimoteEmu/Extension/Turntable.h"
+#include "Core/HW/WiimoteEmu/Extension/UDrawTablet.h"
 #include "Core/HW/WiimoteEmu/MotionPlus.h"
 
 namespace WiimoteEmu
@@ -106,14 +114,31 @@ SerializedWiimoteState SerializeDesiredState(const DesiredWiimoteState& state)
     std::visit(
         [&s](const auto& arg) {
           using T = std::decay_t<decltype(arg)>;
-          static_assert(sizeof(arg) <= 6);
-          Common::BitCastPtr<T>(&s.data[s.length]) = arg;
-          s.length += sizeof(arg);
+          if constexpr (!std::is_same_v<std::monostate, T>)
+          {
+            static_assert(sizeof(arg) <= 6);
+            static_assert(std::is_trivially_copyable_v<T>);
+            std::memcpy(&s.data[s.length], &arg, sizeof(arg));
+            s.length += sizeof(arg);
+          }
         },
         state.extension.data);
   }
 
   return s;
+}
+
+template <typename T>
+static bool DeserializeExtensionState(DesiredWiimoteState* state,
+                                      const SerializedWiimoteState& serialized, size_t offset)
+{
+  if (serialized.length < offset + sizeof(T))
+    return false;
+  auto& e = state->extension.data.emplace<T>();
+  static_assert(std::is_trivially_copyable_v<T>);
+  std::memcpy(static_cast<void*>(&e), static_cast<const void*>(&serialized.data[offset]),
+              sizeof(T));
+  return true;
 }
 
 bool DeserializeDesiredState(DesiredWiimoteState* state, const SerializedWiimoteState& serialized)
@@ -144,7 +169,7 @@ bool DeserializeDesiredState(DesiredWiimoteState* state, const SerializedWiimote
     return false;
   }
 
-  const size_t expected_size = [&] {
+  const size_t expected_size = [&]() {
     size_t s = 1;
     if (has_buttons && has_accel)
       s += 5;
@@ -156,10 +181,39 @@ bool DeserializeDesiredState(DesiredWiimoteState* state, const SerializedWiimote
       s += 12;
     if (has_motion_plus)
       s += 6;
-    if (extension)
+    switch (extension)
     {
-      WithVariantAlternative<DesiredExtensionState::ExtensionData>(
-          extension, [&]<typename T>() { s += sizeof(T); });
+    case ExtensionNumber::NONE:
+      break;
+    case ExtensionNumber::NUNCHUK:
+      s += sizeof(Nunchuk::DataFormat);
+      break;
+    case ExtensionNumber::CLASSIC:
+      s += sizeof(Classic::DataFormat);
+      break;
+    case ExtensionNumber::GUITAR:
+      s += sizeof(Guitar::DataFormat);
+      break;
+    case ExtensionNumber::DRUMS:
+      s += sizeof(Drums::DesiredState);
+      break;
+    case ExtensionNumber::TURNTABLE:
+      s += sizeof(Turntable::DataFormat);
+      break;
+    case ExtensionNumber::UDRAW_TABLET:
+      s += sizeof(UDrawTablet::DataFormat);
+      break;
+    case ExtensionNumber::DRAWSOME_TABLET:
+      s += sizeof(DrawsomeTablet::DataFormat);
+      break;
+    case ExtensionNumber::TATACON:
+      s += sizeof(TaTaCon::DataFormat);
+      break;
+    case ExtensionNumber::SHINKANSEN:
+      s += sizeof(Shinkansen::DesiredState);
+      break;
+    default:
+      break;
     }
     return s;
   }();
@@ -229,13 +283,32 @@ bool DeserializeDesiredState(DesiredWiimoteState* state, const SerializedWiimote
     pos += 6;
   }
 
-  if (extension)
+  switch (extension)
   {
-    WithVariantAlternative<DesiredExtensionState::ExtensionData>(extension, [&]<typename T>() {
-      state->extension.data.emplace<T>(Common::BitCastPtr<T>(&d[pos]));
-    });
+  case ExtensionNumber::NONE:
+    return true;
+  case ExtensionNumber::NUNCHUK:
+    return DeserializeExtensionState<Nunchuk::DataFormat>(state, serialized, pos);
+  case ExtensionNumber::CLASSIC:
+    return DeserializeExtensionState<Classic::DataFormat>(state, serialized, pos);
+  case ExtensionNumber::GUITAR:
+    return DeserializeExtensionState<Guitar::DataFormat>(state, serialized, pos);
+  case ExtensionNumber::DRUMS:
+    return DeserializeExtensionState<Drums::DesiredState>(state, serialized, pos);
+  case ExtensionNumber::TURNTABLE:
+    return DeserializeExtensionState<Turntable::DataFormat>(state, serialized, pos);
+  case ExtensionNumber::UDRAW_TABLET:
+    return DeserializeExtensionState<UDrawTablet::DataFormat>(state, serialized, pos);
+  case ExtensionNumber::DRAWSOME_TABLET:
+    return DeserializeExtensionState<DrawsomeTablet::DataFormat>(state, serialized, pos);
+  case ExtensionNumber::TATACON:
+    return DeserializeExtensionState<TaTaCon::DataFormat>(state, serialized, pos);
+  case ExtensionNumber::SHINKANSEN:
+    return DeserializeExtensionState<Shinkansen::DesiredState>(state, serialized, pos);
+  default:
+    break;
   }
 
-  return true;
+  return false;
 }
 }  // namespace WiimoteEmu

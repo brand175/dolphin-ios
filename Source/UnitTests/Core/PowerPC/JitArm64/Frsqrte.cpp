@@ -57,7 +57,7 @@ TEST(JitArm64, Frsqrte)
   Core::DeclareAsCPUThread();
   Common::ScopeGuard cpu_thread_guard([] { Core::UndeclareAsCPUThread(); });
 
-  const TestFrsqrte test(Core::System::GetInstance());
+  TestFrsqrte test(Core::System::GetInstance());
 
   for (const u64 ivalue : double_test_values)
   {

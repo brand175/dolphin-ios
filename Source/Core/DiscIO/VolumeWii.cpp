@@ -159,7 +159,9 @@ VolumeWii::VolumeWii(std::unique_ptr<BlobReader> reader)
   }
 }
 
-VolumeWii::~VolumeWii() = default;
+VolumeWii::~VolumeWii()
+{
+}
 
 bool VolumeWii::Read(u64 offset, u64 length, u8* buffer, const Partition& partition) const
 {

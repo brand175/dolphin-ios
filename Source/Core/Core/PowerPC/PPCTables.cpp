@@ -16,7 +16,6 @@
 #include "Common/FileUtil.h"
 #include "Common/IOFile.h"
 #include "Common/Logging/Log.h"
-#include "Common/Projection.h"
 #include "Common/StringUtil.h"
 
 #include "Core/PowerPC/PowerPC.h"
@@ -507,11 +506,13 @@ struct Tables
 
 static std::array<GekkoOPStats, TOTAL_INSTRUCTION_COUNT> s_all_instructions_stats;
 
-constexpr Tables s_tables = []() consteval {
+constexpr Tables s_tables = []() consteval
+{
   Tables tables{};
 
   u32 counter = 0;
-  auto make_info = [&](const GekkoOPTemplate& inst) consteval -> u32 {
+  auto make_info = [&](const GekkoOPTemplate& inst) consteval->u32
+  {
     ASSERT(counter < TOTAL_INSTRUCTION_COUNT);
     GekkoOPInfo* info = &tables.all_instructions[counter];
     info->opname = inst.opname;
@@ -607,7 +608,8 @@ constexpr Tables s_tables = []() consteval {
 
   ASSERT(counter == TOTAL_INSTRUCTION_COUNT);
   return tables;
-}();
+}
+();
 
 const GekkoOPInfo* GetOpInfo(UGeckoInstruction inst, u32 pc)
 {
@@ -692,7 +694,8 @@ void PrintInstructionRunCounts()
     const GekkoOPInfo& info = s_tables.all_instructions[i];
     temp[i] = std::make_pair(info.opname, info.stats->run_count);
   }
-  std::ranges::sort(temp, std::ranges::greater{}, Common::Projection::Second{});
+  std::sort(temp.begin(), temp.end(),
+            [](const OpInfo& a, const OpInfo& b) { return a.second > b.second; });
 
   for (auto& inst : temp)
   {

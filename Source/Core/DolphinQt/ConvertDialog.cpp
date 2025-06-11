@@ -31,6 +31,7 @@
 #include "DolphinQt/QtUtils/DolphinFileDialog.h"
 #include "DolphinQt/QtUtils/ModalMessageBox.h"
 #include "DolphinQt/QtUtils/ParallelProgressDialog.h"
+#include "DolphinQt/QtUtils/SetWindowDecorations.h"
 #include "UICommon/GameFile.h"
 #include "UICommon/UICommon.h"
 
@@ -41,6 +42,7 @@ ConvertDialog::ConvertDialog(QList<std::shared_ptr<const UICommon::GameFile>> fi
   ASSERT(!m_files.empty());
 
   setWindowTitle(tr("Convert"));
+  setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
   QGridLayout* grid_layout = new QGridLayout;
   grid_layout->setColumnStretch(1, 1);
@@ -282,6 +284,7 @@ bool ConvertDialog::ShowAreYouSureDialog(const QString& text)
   warning.setInformativeText(text);
   warning.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 
+  SetQWidgetWindowDecorations(&warning);
   return warning.exec() == QMessageBox::Yes;
 }
 
@@ -406,6 +409,7 @@ void ConvertDialog::Convert()
                                     .arg(dst_info.fileName()));
         confirm_replace.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 
+        SetQWidgetWindowDecorations(&confirm_replace);
         if (confirm_replace.exec() == QMessageBox::No)
           continue;
       }
@@ -516,6 +520,7 @@ void ConvertDialog::Convert()
         break;
       }
 
+      SetQWidgetWindowDecorations(progress_dialog.GetRaw());
       progress_dialog.GetRaw()->exec();
       if (!success.get())
       {

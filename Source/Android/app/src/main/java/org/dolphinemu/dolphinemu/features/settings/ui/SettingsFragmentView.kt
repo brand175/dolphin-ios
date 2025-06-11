@@ -14,9 +14,10 @@ import org.dolphinemu.dolphinemu.utils.GpuDriverInstallResult
  */
 interface SettingsFragmentView {
     /**
-     * Called when a Settings object becomes available.
+     * Called by the containing Activity to notify the Fragment that an
+     * asynchronous load operation completed.
      *
-     * @param settings The settings that this Fragment should access.
+     * @param settings The (possibly null) result of the ini load operation.
      */
     fun onSettingsFileLoaded(settings: Settings)
 
@@ -26,6 +27,12 @@ interface SettingsFragmentView {
      * @param settingsList The settings to display
      */
     fun showSettingsList(settingsList: ArrayList<SettingsItem>)
+
+    /**
+     * Called by the containing Activity when an asynchronous load operation fails.
+     * Instructs the Fragment to load the settings screen with defaults selected.
+     */
+    fun loadDefaultSettings()
 
     /**
      * @return The Fragment's containing activity.
@@ -88,9 +95,12 @@ interface SettingsFragmentView {
      * @param value   The current value of the Setting.
      */
     fun hasMenuTagActionForValue(menuTag: MenuTag, value: Int): Boolean
-
     /**
-     * Controls whether the input mapping dialog should detect inputs from all devices,
+     * Returns whether the input mapping dialog should detect inputs from all devices,
+     * not just the device configured for the controller.
+     */
+    /**
+     * Sets whether the input mapping dialog should detect inputs from all devices,
      * not just the device configured for the controller.
      */
     var isMappingAllDevices: Boolean

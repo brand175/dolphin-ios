@@ -10,7 +10,6 @@
 #include <string>
 #include <thread>
 #include <utility>
-#include <vector>
 
 #include <EGL/egl.h>
 #include <android/log.h>
@@ -692,25 +691,27 @@ JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_ChangeDisc(J
   system.GetDVDInterface().ChangeDisc(Core::CPUThreadGuard{system}, path);
 }
 
-JNIEXPORT jobjectArray JNICALL
-Java_org_dolphinemu_dolphinemu_NativeLibrary_GetLogTypeNames(JNIEnv* env, jclass)
+JNIEXPORT jobject JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_GetLogTypeNames(JNIEnv* env,
+                                                                                       jclass)
 {
-  using LogManager = Common::Log::LogManager;
+  std::map<std::string, std::string> map = Common::Log::LogManager::GetInstance()->GetLogTypes();
 
-  return VectorToJObjectArray(
-      env, LogManager::GetInstance()->GetLogTypes(), IDCache::GetPairClass(),
-      [](JNIEnv* env_, const LogManager::LogContainer& log_container) {
-        jstring short_name = ToJString(env_, log_container.m_short_name);
-        jstring full_name = ToJString(env_, log_container.m_full_name);
+  auto map_size = static_cast<jsize>(map.size());
+  jobject linked_hash_map =
+      env->NewObject(IDCache::GetLinkedHashMapClass(), IDCache::GetLinkedHashMapInit(), map_size);
+  for (const auto& entry : map)
+  {
+    jstring key = ToJString(env, entry.first);
+    jstring value = ToJString(env, entry.second);
 
-        jobject pair = env_->NewObject(IDCache::GetPairClass(), IDCache::GetPairConstructor(),
-                                       short_name, full_name);
+    jobject result =
+        env->CallObjectMethod(linked_hash_map, IDCache::GetLinkedHashMapPut(), key, value);
 
-        env_->DeleteLocalRef(short_name);
-        env_->DeleteLocalRef(full_name);
-
-        return pair;
-      });
+    env->DeleteLocalRef(key);
+    env->DeleteLocalRef(value);
+    env->DeleteLocalRef(result);
+  }
+  return linked_hash_map;
 }
 
 JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_ReloadLoggerConfig(JNIEnv*,

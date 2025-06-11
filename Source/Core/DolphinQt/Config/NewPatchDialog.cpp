@@ -38,6 +38,7 @@ NewPatchDialog::NewPatchDialog(QWidget* parent, PatchEngine::Patch& patch)
     : QDialog(parent), m_patch(patch)
 {
   setWindowTitle(tr("Patch Editor"));
+  setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
   CreateWidgets();
   ConnectWidgets();
@@ -180,8 +181,8 @@ QGroupBox* NewPatchDialog::CreateEntry(const PatchEngine::PatchEntry& entry)
       m_entry_layout->removeWidget(box);
       box->deleteLater();
 
-      m_entries.erase(
-          std::ranges::find(m_entries, new_entry, [](const auto& e) { return e.get(); }));
+      m_entries.erase(std::find_if(m_entries.begin(), m_entries.end(),
+                                   [new_entry](const auto& e) { return e.get() == new_entry; }));
     }
   });
 

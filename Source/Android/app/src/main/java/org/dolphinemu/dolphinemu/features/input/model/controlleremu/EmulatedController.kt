@@ -5,29 +5,20 @@ package org.dolphinemu.dolphinemu.features.input.model.controlleremu
 import androidx.annotation.Keep
 
 /**
- * Represents a C++ ControllerEmu::ControlGroupContainer.
- *
- * The lifetime of this class is managed by C++ code. Calling methods on it after it's destroyed
- * in C++ is undefined behavior!
- */
-@Keep
-open class ControlGroupContainer constructor(private val pointer: Long) {
-  external fun getGroupCount(): Int
-
-  external fun getGroup(index: Int): ControlGroup
-}
-
-/**
  * Represents a C++ ControllerEmu::EmulatedController.
  *
  * The lifetime of this class is managed by C++ code. Calling methods on it after it's destroyed
  * in C++ is undefined behavior!
  */
 @Keep
-class EmulatedController private constructor(private val pointer: Long) : ControlGroupContainer(pointer) {
+class EmulatedController private constructor(private val pointer: Long) {
     external fun getDefaultDevice(): String
 
     external fun setDefaultDevice(device: String)
+
+    external fun getGroupCount(): Int
+
+    external fun getGroup(index: Int): ControlGroup
 
     external fun updateSingleControlReference(controlReference: ControlReference)
 
@@ -59,7 +50,7 @@ class EmulatedController private constructor(private val pointer: Long) : Contro
         external fun getWiimoteAttachment(
             controllerIndex: Int,
             attachmentIndex: Int
-        ): ControlGroupContainer
+        ): EmulatedController
 
         @JvmStatic
         external fun getSelectedWiimoteAttachment(controllerIndex: Int): Int

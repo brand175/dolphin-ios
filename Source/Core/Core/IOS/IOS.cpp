@@ -105,8 +105,9 @@ constexpr u32 PLACEHOLDER = 0xDEADBEEF;
 
 static bool SetupMemory(Memory::MemoryManager& memory, u64 ios_title_id, MemorySetupType setup_type)
 {
-  auto target_imv = std::ranges::find(GetMemoryValues(), static_cast<u16>(ios_title_id & 0xffff),
-                                      &MemoryValues::ios_number);
+  auto target_imv = std::find_if(
+      GetMemoryValues().begin(), GetMemoryValues().end(),
+      [&](const MemoryValues& imv) { return imv.ios_number == (ios_title_id & 0xffff); });
 
   if (target_imv == GetMemoryValues().end())
   {
@@ -951,7 +952,7 @@ static void FinishPPCBootstrap(Core::System& system, u64 userdata, s64 cycles_la
 
   ASSERT(Core::IsCPUThread());
   Core::CPUThreadGuard guard(system);
-  SConfig::OnTitleDirectlyBooted(guard);
+  SConfig::OnNewTitleLoad(guard);
 
   INFO_LOG_FMT(IOS, "Bootstrapping done.");
 }

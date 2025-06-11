@@ -50,9 +50,6 @@
 #include "UICommon/DiscordPresence.h"
 #include "UICommon/USBUtils.h"
 
-#include "VideoCommon/VideoBackendBase.h"
-#include "VideoCommon/VideoConfig.h"
-
 #ifdef HAVE_QTDBUS
 #include "UICommon/DBusUtils.h"
 #endif
@@ -60,6 +57,8 @@
 #if defined(__APPLE__) && !defined(IPHONEOS)
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #endif
+
+#include "VideoCommon/VideoBackendBase.h"
 
 namespace UICommon
 {
@@ -131,17 +130,14 @@ void Init()
   Core::RestoreWiiSettings(Core::RestoreReason::CrashRecovery);
 
   Config::Init();
-  const auto config_changed_callback = []() {
-    InitCustomPaths();
-    RefreshConfig();
-  };
-  s_config_changed_callback_id = Config::AddConfigChangedCallback(config_changed_callback);
+  Config::AddConfigChangedCallback(InitCustomPaths);
   Config::AddLayer(ConfigLoaders::GenerateBaseConfigLoader());
   SConfig::Init();
   Discord::Init();
   Common::Log::LogManager::Init();
   VideoBackendBase::ActivateBackend(Config::Get(Config::MAIN_GFX_BACKEND));
 
+  s_config_changed_callback_id = Config::AddConfigChangedCallback(RefreshConfig);
   RefreshConfig();
 }
 
@@ -153,7 +149,6 @@ void Shutdown()
   WiimoteReal::Shutdown();
   Common::Log::LogManager::Shutdown();
   Discord::Shutdown();
-  g_Config.Shutdown();
   SConfig::Shutdown();
   Config::Shutdown();
 }

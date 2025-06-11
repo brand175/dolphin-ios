@@ -23,7 +23,7 @@ sf::Packet& operator>>(sf::Packet& packet, Common::BigEndianValue<u32>& data)
 
 sf::Packet& operator>>(sf::Packet& packet, Common::BigEndianValue<u64>& data)
 {
-  u64 tmp;
+  sf::Uint64 tmp;
   packet >> tmp;
   data = tmp;
   return packet;
@@ -35,7 +35,7 @@ namespace Common
 // so we have this for cleaner code.
 u64 PacketReadU64(sf::Packet& packet)
 {
-  u64 value;
+  sf::Uint64 value;
   packet >> value;
   return value;
 }

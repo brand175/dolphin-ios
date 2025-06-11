@@ -33,7 +33,7 @@ class CodeWidget : public QDockWidget
   Q_OBJECT
 public:
   explicit CodeWidget(QWidget* parent = nullptr);
-  ~CodeWidget() override;
+  ~CodeWidget();
 
   void Step();
   void StepOver();
@@ -50,7 +50,6 @@ public:
 
   void Update();
   void UpdateSymbols();
-  void ActivateSearchAddress();
 signals:
   void RequestPPCComparison(u32 address, bool translate_address);
   void ShowMemory(u32 address);

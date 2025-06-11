@@ -50,9 +50,8 @@ public:
       BitField<3, 5, u8> status;
     };
   };
-  static_assert(6 == sizeof(DataFormat), "Wrong size.");
 
-  using DesiredState = DataFormat;
+  static_assert(6 == sizeof(DataFormat), "Wrong size.");
 
 private:
   ControllerEmu::AnalogStick* m_stylus;

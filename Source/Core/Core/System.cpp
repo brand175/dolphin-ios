@@ -32,7 +32,6 @@
 #include "Core/PowerPC/PowerPC.h"
 #include "IOS/USB/Emulated/Infinity.h"
 #include "IOS/USB/Emulated/Skylanders/Skylander.h"
-#include "IOS/USB/USBScanner.h"
 #include "VideoCommon/Assets/CustomAssetLoader.h"
 #include "VideoCommon/CommandProcessor.h"
 #include "VideoCommon/Fifo.h"
@@ -90,7 +89,6 @@ struct System::Impl
   SerialInterface::SerialInterfaceManager m_serial_interface;
   Sram m_sram;
   SystemTimers::SystemTimersManager m_system_timers;
-  IOS::HLE::USBScanner m_usb_scanner;
   VertexShaderManager m_vertex_shader_manager;
   XFStateManager m_xf_state_manager;
   VideoInterface::VideoInterfaceManager m_video_interface;
@@ -319,11 +317,6 @@ Sram& System::GetSRAM() const
 SystemTimers::SystemTimersManager& System::GetSystemTimers() const
 {
   return m_impl->m_system_timers;
-}
-
-IOS::HLE::USBScanner& System::GetUSBScanner() const
-{
-  return m_impl->m_usb_scanner;
 }
 
 VertexShaderManager& System::GetVertexShaderManager() const

@@ -941,7 +941,8 @@ ConversionResultCode WIARVZFileReader<RVZ>::SetUpDataEntriesForWriting(
   if (volume && volume->HasWiiHashes() && volume->HasWiiEncryption())
     partitions = volume->GetPartitions();
 
-  std::ranges::sort(partitions, {}, &Partition::offset);
+  std::sort(partitions.begin(), partitions.end(),
+            [](const Partition& a, const Partition& b) { return a.offset < b.offset; });
 
   *total_groups = 0;
 
@@ -1371,8 +1372,8 @@ WIARVZFileReader<RVZ>::ProcessAndCompress(CompressThreadState* state, CompressPa
       TryReuse(reusable_groups, reusable_groups_mutex, &entry);
       if (!entry.reused_group && reuse_id)
       {
-        const auto it = std::ranges::find(output_entries.begin(), output_entries.begin() + i,
-                                          reuse_id, &OutputParametersEntry::reuse_id);
+        const auto it = std::find_if(output_entries.begin(), output_entries.begin() + i,
+                                     [reuse_id](const auto& e) { return e.reuse_id == reuse_id; });
         if (it != output_entries.begin() + i)
           entry.reused_group = it->reused_group;
       }
@@ -1700,7 +1701,7 @@ ConversionResultCode WIARVZFileReader<RVZ>::Output(std::vector<OutputParametersE
 template <bool RVZ>
 ConversionResultCode WIARVZFileReader<RVZ>::RunCallback(size_t groups_written, u64 bytes_read,
                                                         u64 bytes_written, u32 total_groups,
-                                                        u64 iso_size, const CompressCB& callback)
+                                                        u64 iso_size, CompressCB callback)
 {
   int ratio = 0;
   if (bytes_read != 0)
@@ -2040,7 +2041,7 @@ WIARVZFileReader<RVZ>::Convert(BlobReader* infile, const VolumeDisc* infile_volu
 bool ConvertToWIAOrRVZ(BlobReader* infile, const std::string& infile_path,
                        const std::string& outfile_path, bool rvz,
                        WIARVZCompressionType compression_type, int compression_level,
-                       int chunk_size, const CompressCB& callback)
+                       int chunk_size, CompressCB callback)
 {
   File::IOFile outfile(outfile_path, "wb");
   if (!outfile)

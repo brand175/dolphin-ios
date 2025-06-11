@@ -5,13 +5,19 @@
 
 #include <QWidget>
 
+#include <functional>
+#include <optional>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "Common/CommonTypes.h"
-#include "Core/ActionReplay.h"
 #include "Core/CheatSearch.h"
 
+namespace ActionReplay
+{
+struct ARCode;
+}
 namespace Core
 {
 class System;
@@ -51,7 +57,7 @@ public:
 signals:
   void ActionReplayCodeGenerated(const ActionReplay::ARCode& ar_code);
   void RequestWatch(QString name, u32 address);
-  void ShowMemory(u32 address);
+  void ShowMemory(const u32 address);
 
 private:
   void CreateWidgets();

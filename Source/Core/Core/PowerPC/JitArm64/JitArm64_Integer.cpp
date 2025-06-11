@@ -2266,11 +2266,12 @@ void JitArm64::rlwimix(UGeckoInstruction inst)
       gpr.BindToRegister(a, true);
       ARM64Reg RA = gpr.R(a);
       auto WA = gpr.GetScopedReg();
-      const u32 inverted_mask = ~mask;
+      auto WB = a == s ? gpr.GetScopedReg() : Arm64GPRCache::ScopedARM64Reg(RA);
 
-      AND(WA, gpr.R(s), LogicalImm(std::rotl(mask, rot_dist), GPRSize::B32));
-      AND(RA, RA, LogicalImm(inverted_mask, GPRSize::B32));
-      ORR(RA, RA, WA, ArithOption(WA, ShiftType::ROR, rot_dist));
+      MOVI2R(WA, mask);
+      BIC(WB, RA, WA);
+      AND(WA, WA, gpr.R(s), ArithOption(gpr.R(s), ShiftType::ROR, rot_dist));
+      ORR(RA, WB, WA);
     }
 
     if (inst.Rc)

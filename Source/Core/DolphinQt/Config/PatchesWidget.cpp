@@ -16,6 +16,7 @@
 
 #include "DolphinQt/Config/HardcoreWarningWidget.h"
 #include "DolphinQt/Config/NewPatchDialog.h"
+#include "DolphinQt/QtUtils/SetWindowDecorations.h"
 
 #include "UICommon/GameFile.h"
 
@@ -93,6 +94,7 @@ void PatchesWidget::OnAdd()
   bool new_patch_confirmed = false;
   {
     NewPatchDialog dialog(this, patch);
+    SetQWidgetWindowDecorations(&dialog);
     new_patch_confirmed = dialog.exec();
   }
   if (new_patch_confirmed)
@@ -122,6 +124,7 @@ void PatchesWidget::OnEdit()
   bool new_patch_confirmed = false;
   {
     NewPatchDialog dialog(this, patch);
+    SetQWidgetWindowDecorations(&dialog);
     new_patch_confirmed = dialog.exec();
   }
   if (new_patch_confirmed)

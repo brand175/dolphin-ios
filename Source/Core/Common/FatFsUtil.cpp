@@ -25,7 +25,6 @@
 #include "Common/Logging/Log.h"
 #include "Common/ScopeGuard.h"
 #include "Common/StringUtil.h"
-#include "Common/TimeUtil.h"
 
 #include "Core/Config/MainSettings.h"
 
@@ -85,7 +84,7 @@ int SDCardDiskIOCtl(File::IOFile* image, u8 pdrv, u8 cmd, void* buff)
   case CTRL_SYNC:
     return RES_OK;
   case GET_SECTOR_COUNT:
-    *static_cast<LBA_t*>(buff) = image->GetSize() / SECTOR_SIZE;
+    *reinterpret_cast<LBA_t*>(buff) = image->GetSize() / SECTOR_SIZE;
     return RES_OK;
   default:
     WARN_LOG_FMT(COMMON, "Unexpected SD image ioctl {}", cmd);
@@ -96,7 +95,12 @@ int SDCardDiskIOCtl(File::IOFile* image, u8 pdrv, u8 cmd, void* buff)
 u32 GetSystemTimeFAT()
 {
   const std::time_t time = std::time(nullptr);
-  std::tm tm = *Common::LocalTime(time);
+  std::tm tm;
+#ifdef _WIN32
+  localtime_s(&tm, &time);
+#else
+  localtime_r(&time, &tm);
+#endif
 
   DWORD fattime = 0;
   fattime |= (tm.tm_year - 80) << 25;
@@ -481,7 +485,10 @@ static bool Pack(const std::function<bool()>& cancelled, const File::FSTEntry& e
 
 static void SortFST(File::FSTEntry* root)
 {
-  std::ranges::sort(root->children, {}, &File::FSTEntry::virtualName);
+  std::sort(root->children.begin(), root->children.end(),
+            [](const File::FSTEntry& lhs, const File::FSTEntry& rhs) {
+              return lhs.virtualName < rhs.virtualName;
+            });
   for (auto& child : root->children)
     SortFST(&child);
 }

@@ -22,6 +22,7 @@
 ColorCorrectionConfigWindow::ColorCorrectionConfigWindow(QWidget* parent) : QDialog(parent)
 {
   setWindowTitle(tr("Color Correction Configuration"));
+  setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
   Create();
   ConnectWidgets();
@@ -155,8 +156,8 @@ void ColorCorrectionConfigWindow::Create()
   layout->addStretch();
   layout->addWidget(m_button_box);
 
+  setLayout(layout);
   WrapInScrollArea(this, layout);
-  adjustSize();
 }
 
 void ColorCorrectionConfigWindow::ConnectWidgets()

@@ -3,9 +3,14 @@
 
 #include "VideoBackends/Vulkan/VKGfx.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdio>
+#include <limits>
+#include <string>
+#include <tuple>
 
+#include "Common/Assert.h"
 #include "Common/CommonTypes.h"
 #include "Common/EnumUtils.h"
 #include "Common/Logging/Log.h"
@@ -113,7 +118,7 @@ void VKGfx::ClearRegion(const MathUtil::Rectangle<int>& target_rc, bool color_en
   clear_color_value.color.float32[2] = static_cast<float>((color >> 0) & 0xFF) / 255.0f;
   clear_color_value.color.float32[3] = static_cast<float>((color >> 24) & 0xFF) / 255.0f;
   clear_depth_value.depthStencil.depth = static_cast<float>(z & 0xFFFFFF) / 16777216.0f;
-  if (!g_backend_info.bSupportsReversedDepthRange)
+  if (!g_ActiveConfig.backend_info.bSupportsReversedDepthRange)
     clear_depth_value.depthStencil.depth = 1.0f - clear_depth_value.depthStencil.depth;
 
   // If we're not in a render pass (start of the frame), we can use a clear render pass
@@ -220,7 +225,8 @@ bool VKGfx::BindBackbuffer(const ClearColor& clear_color)
 {
   StateTracker::GetInstance()->EndRenderPass();
 
-  g_command_buffer_mgr->WaitForWorkerThreadIdle();
+  if (!g_command_buffer_mgr->CheckLastPresentDone())
+    g_command_buffer_mgr->WaitForWorkerThreadIdle();
 
   // Handle host window resizes.
   CheckForSurfaceChange();

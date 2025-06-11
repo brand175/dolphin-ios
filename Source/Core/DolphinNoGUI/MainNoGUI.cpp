@@ -4,8 +4,10 @@
 #include "DolphinNoGUI/Platform.h"
 
 #include <OptionParser.h>
-#include <csignal>
+#include <cstddef>
 #include <cstdio>
+#include <cstring>
+#include <signal.h>
 #include <string>
 #include <vector>
 
@@ -30,13 +32,15 @@
 #endif
 #include "UICommon/UICommon.h"
 
+#include "InputCommon/GCAdapter.h"
+
 #include "VideoCommon/VideoBackendBase.h"
 
 static std::unique_ptr<Platform> s_platform;
 
 static void signal_handler(int)
 {
-  constexpr char message[] = "A signal was received. A second signal will force Dolphin to stop.\n";
+  const char message[] = "A signal was received. A second signal will force Dolphin to stop.\n";
 #ifdef _WIN32
   puts(message);
 #else
@@ -71,7 +75,7 @@ bool Host_UIBlocksControllerState()
 }
 
 static Common::Event s_update_main_frame_event;
-void Host_Message(const HostMessageID id)
+void Host_Message(HostMessageID id)
 {
   if (id == HostMessageID::WMUserStop)
     s_platform->Stop();
@@ -197,31 +201,31 @@ static std::unique_ptr<Platform> GetPlatform(const optparse::Values& options)
 #define main app_main
 #endif
 
-int main(const int argc, char* argv[])
+int main(int argc, char* argv[])
 {
   Core::DeclareAsHostThread();
 
-  const auto parser =
-      CommandLineParse::CreateParser(CommandLineParse::ParserOptions::OmitGUIOptions);
+  auto parser = CommandLineParse::CreateParser(CommandLineParse::ParserOptions::OmitGUIOptions);
   parser->add_option("-p", "--platform")
       .action("store")
       .help("Window platform to use [%choices]")
-      .choices({"headless"
+      .choices({
+        "headless"
 #ifdef __linux__
-                ,
-                "fbdev"
+            ,
+            "fbdev"
 #endif
 #if HAVE_X11
-                ,
-                "x11"
+            ,
+            "x11"
 #endif
 #ifdef _WIN32
-                ,
-                "win32"
+            ,
+            "win32"
 #endif
 #ifdef __APPLE__
-                ,
-                "macos"
+            ,
+            "macos"
 #endif
       });
 
@@ -298,14 +302,14 @@ int main(const int argc, char* argv[])
     return 1;
   }
 
-  Core::AddOnStateChangedCallback([](const Core::State state) {
+  Core::AddOnStateChangedCallback([](Core::State state) {
     if (state == Core::State::Uninitialized)
       s_platform->Stop();
   });
 
 #ifdef _WIN32
-  std::signal(SIGINT, signal_handler);
-  std::signal(SIGTERM, signal_handler);
+  signal(SIGINT, signal_handler);
+  signal(SIGTERM, signal_handler);
 #else
   // Shut down cleanly on SIGINT and SIGTERM
   struct sigaction sa;

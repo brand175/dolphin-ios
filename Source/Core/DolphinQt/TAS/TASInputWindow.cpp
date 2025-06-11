@@ -17,8 +17,11 @@
 #include <QSpinBox>
 #include <QVBoxLayout>
 
+#include "Common/CommonTypes.h"
+
 #include "DolphinQt/Host.h"
 #include "DolphinQt/QtUtils/AspectRatioWidget.h"
+#include "DolphinQt/QtUtils/QueueOnObject.h"
 #include "DolphinQt/Resources.h"
 #include "DolphinQt/TAS/StickWidget.h"
 #include "DolphinQt/TAS/TASCheckBox.h"
@@ -45,6 +48,7 @@ ControllerEmu::InputOverrideFunction InputOverrider::GetInputOverrideFunction() 
 
 TASInputWindow::TASInputWindow(QWidget* parent) : QDialog(parent)
 {
+  setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
   setWindowIcon(Resources::GetAppIcon());
 
   QGridLayout* settings_layout = new QGridLayout;
@@ -246,12 +250,14 @@ std::optional<ControlState> TASInputWindow::GetButton(TASCheckBox* checkbox,
 std::optional<ControlState> TASInputWindow::GetSpinBox(TASSpinBox* spin, int zero, int min, int max,
                                                        ControlState controller_state)
 {
-  const int controller_value = ControllerEmu::MapFloat<int>(controller_state, zero, 0, max);
+  const int controller_value =
+      ControllerEmu::EmulatedController::MapFloat<int>(controller_state, zero, 0, max);
 
   if (m_use_controller->isChecked())
     spin->OnControllerValueChanged(controller_value);
 
-  return ControllerEmu::MapToFloat<ControlState, int>(spin->GetValue(), zero, min, max);
+  return ControllerEmu::EmulatedController::MapToFloat<ControlState, int>(spin->GetValue(), zero,
+                                                                          min, max);
 }
 
 std::optional<ControlState> TASInputWindow::GetSpinBox(TASSpinBox* spin, int zero,

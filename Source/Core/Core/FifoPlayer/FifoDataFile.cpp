@@ -79,7 +79,7 @@ FifoDataFile::FifoDataFile() = default;
 
 FifoDataFile::~FifoDataFile() = default;
 
-bool FifoDataFile::ShouldGenerateFakeVIUpdates()
+bool FifoDataFile::ShouldGenerateFakeVIUpdates() const
 {
   return true;
 }

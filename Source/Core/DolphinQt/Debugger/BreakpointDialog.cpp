@@ -24,6 +24,7 @@
 BreakpointDialog::BreakpointDialog(BreakpointWidget* parent)
     : QDialog(parent), m_parent(parent), m_open_mode(OpenMode::New)
 {
+  setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
   setWindowTitle(tr("New Breakpoint"));
   CreateWidgets();
   ConnectWidgets();
@@ -35,6 +36,7 @@ BreakpointDialog::BreakpointDialog(BreakpointWidget* parent)
 BreakpointDialog::BreakpointDialog(BreakpointWidget* parent, const TBreakPoint* breakpoint)
     : QDialog(parent), m_parent(parent), m_open_mode(OpenMode::EditBreakPoint)
 {
+  setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
   setWindowTitle(tr("Edit Breakpoint"));
   CreateWidgets();
   ConnectWidgets();
@@ -54,6 +56,7 @@ BreakpointDialog::BreakpointDialog(BreakpointWidget* parent, const TBreakPoint* 
 BreakpointDialog::BreakpointDialog(BreakpointWidget* parent, const TMemCheck* memcheck)
     : QDialog(parent), m_parent(parent), m_open_mode(OpenMode::EditMemCheck)
 {
+  setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
   setWindowTitle(tr("Edit Breakpoint"));
 
   CreateWidgets();

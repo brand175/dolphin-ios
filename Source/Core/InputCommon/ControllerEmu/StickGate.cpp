@@ -10,6 +10,7 @@
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 
+#include "Common/Common.h"
 #include "Common/MathUtil.h"
 #include "Common/Matrix.h"
 #include "Common/StringUtil.h"
@@ -227,9 +228,10 @@ void ReshapableInput::SetCenter(ReshapableInput::ReshapeData center)
   m_center = center;
 }
 
-void ReshapableInput::LoadConfig(Common::IniFile::Section* section, const std::string& base_name)
+void ReshapableInput::LoadConfig(Common::IniFile::Section* section,
+                                 const std::string& default_device, const std::string& base_name)
 {
-  ControlGroup::LoadConfig(section, base_name);
+  ControlGroup::LoadConfig(section, default_device, base_name);
 
   const std::string group(base_name + name + '/');
 
@@ -269,9 +271,10 @@ void ReshapableInput::LoadConfig(Common::IniFile::Section* section, const std::s
   }
 }
 
-void ReshapableInput::SaveConfig(Common::IniFile::Section* section, const std::string& base_name)
+void ReshapableInput::SaveConfig(Common::IniFile::Section* section,
+                                 const std::string& default_device, const std::string& base_name)
 {
-  ControlGroup::SaveConfig(section, base_name);
+  ControlGroup::SaveConfig(section, default_device, base_name);
 
   const std::string group(base_name + name + '/');
 

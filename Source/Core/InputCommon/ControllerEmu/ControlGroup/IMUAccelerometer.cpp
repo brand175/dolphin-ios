@@ -4,6 +4,7 @@
 #include "InputCommon/ControllerEmu/ControlGroup/IMUAccelerometer.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "Common/Common.h"
 #include "Core/HW/WiimoteEmu/WiimoteEmu.h"
@@ -24,7 +25,7 @@ IMUAccelerometer::IMUAccelerometer(std::string name_, std::string ui_name_)
 
 bool IMUAccelerometer::AreInputsBound() const
 {
-  return std::ranges::any_of(
+  return std::ranges::all_of(
       controls, [](const auto& control) { return control->control_ref->BoundCount() > 0; });
 }
 

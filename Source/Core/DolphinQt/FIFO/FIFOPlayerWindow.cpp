@@ -59,18 +59,10 @@ FIFOPlayerWindow::FIFOPlayerWindow(FifoPlayer& fifo_player, FifoRecorder& fifo_r
   });
 
   connect(&Settings::Instance(), &Settings::EmulationStateChanged, this, [this](Core::State state) {
-    // We don't want to trigger OnEmulationStarted when going from Paused to Running,
-    // and nothing in UpdateControls treats Paused and Running differently
-    if (state == Core::State::Paused)
-      state = Core::State::Running;
-
-    // Skip redundant updates
     if (state == m_emu_state)
       return;
 
-    UpdateControls();
-
-    if (state == Core::State::Running)
+    if (state == Core::State::Running && m_emu_state != Core::State::Paused)
       OnEmulationStarted();
     else if (state == Core::State::Uninitialized)
       OnEmulationStopped();
@@ -274,6 +266,8 @@ void FIFOPlayerWindow::StopRecording()
 
 void FIFOPlayerWindow::OnEmulationStarted()
 {
+  UpdateControls();
+
   if (m_fifo_player.GetFile())
     OnFIFOLoaded();
 }
@@ -284,6 +278,7 @@ void FIFOPlayerWindow::OnEmulationStopped()
   if (m_fifo_recorder.IsRecording())
     StopRecording();
 
+  UpdateControls();
   // When emulation stops, switch away from the analyzer tab, as it no longer shows anything useful
   m_tab_widget->setCurrentWidget(m_main_widget);
   m_analyzer->Update();

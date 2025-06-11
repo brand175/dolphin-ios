@@ -103,7 +103,7 @@ bool Load(Core::System& system)
   NOTICE_LOG_FMT(IOS, "IPL ready.");
   system.SetIsMIOS(true);
   system.GetDVDInterface().UpdateRunningGameMetadata();
-  SConfig::OnTitleDirectlyBooted(guard);
+  SConfig::OnNewTitleLoad(guard);
   return true;
 }
 }  // namespace IOS::HLE::MIOS

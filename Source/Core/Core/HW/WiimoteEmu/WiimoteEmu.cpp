@@ -497,7 +497,7 @@ void Wiimote::BuildDesiredWiimoteState(DesiredWiimoteState* target_state,
       ConvertAccelData(GetTotalAcceleration(), ACCEL_ZERO_G << 2, ACCEL_ONE_G << 2);
 
   // Calculate IR camera state.
-  if (m_ir_passthrough->enabled.GetValue())
+  if (m_ir_passthrough->enabled)
   {
     target_state->camera_points = GetPassthroughCameraPoints(m_ir_passthrough);
   }
@@ -790,7 +790,7 @@ void Wiimote::LoadDefaults(const ControllerInterface& ciface)
   // Enable Nunchuk:
   constexpr ExtensionNumber DEFAULT_EXT = ExtensionNumber::NUNCHUK;
   m_attachments->SetSelectedAttachment(DEFAULT_EXT);
-  m_attachments->GetAttachmentList()[DEFAULT_EXT]->LoadDefaults();
+  m_attachments->GetAttachmentList()[DEFAULT_EXT]->LoadDefaults(ciface);
 }
 
 Extension* Wiimote::GetNoneExtension() const

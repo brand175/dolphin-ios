@@ -5,9 +5,8 @@
 
 #include <array>
 #include <cstdarg>
-#include <memory>
+#include <map>
 #include <string>
-#include <vector>
 
 #include "Common/BitSet.h"
 #include "Common/EnumMap.h"
@@ -32,18 +31,9 @@ public:
   };
 };
 
-class LogManager final
+class LogManager
 {
 public:
-  struct LogContainer
-  {
-    const char* m_short_name;
-    const char* m_full_name;
-    bool m_enable = false;
-  };
-
-  ~LogManager();
-
   static LogManager* GetInstance();
   static void Init();
   static void Shutdown();
@@ -58,19 +48,27 @@ public:
   void SetEnable(LogType type, bool enable);
   bool IsEnabled(LogType type, LogLevel level = LogLevel::LNOTICE) const;
 
-  std::vector<LogContainer> GetLogTypes();
+  std::map<std::string, std::string> GetLogTypes();
 
   const char* GetShortName(LogType type) const;
   const char* GetFullName(LogType type) const;
 
-  void RegisterListener(LogListener::LISTENER id, std::unique_ptr<LogListener> listener);
+  void RegisterListener(LogListener::LISTENER id, LogListener* listener);
   void EnableListener(LogListener::LISTENER id, bool enable);
   bool IsListenerEnabled(LogListener::LISTENER id) const;
 
   void SaveSettings();
 
 private:
+  struct LogContainer
+  {
+    const char* m_short_name;
+    const char* m_full_name;
+    bool m_enable = false;
+  };
+
   LogManager();
+  ~LogManager();
 
   LogManager(const LogManager&) = delete;
   LogManager& operator=(const LogManager&) = delete;
@@ -81,7 +79,7 @@ private:
 
   LogLevel m_level;
   EnumMap<LogContainer, LAST_LOG_TYPE> m_log{};
-  std::array<std::unique_ptr<LogListener>, LogListener::NUMBER_OF_LISTENERS> m_listeners{};
+  std::array<LogListener*, LogListener::NUMBER_OF_LISTENERS> m_listeners{};
   BitSet32 m_listener_ids;
   size_t m_path_cutoff_point = 0;
 };

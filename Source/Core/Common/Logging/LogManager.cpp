@@ -8,7 +8,6 @@
 #include <cstdarg>
 #include <cstring>
 #include <locale>
-#include <memory>
 #include <mutex>
 #include <ostream>
 #include <string>
@@ -152,8 +151,8 @@ LogManager::LogManager()
   m_log[LogType::WII_IPC] = {"WII_IPC", "WII IPC"};
 
   RegisterListener(LogListener::FILE_LISTENER,
-                   std::make_unique<FileLogListener>(File::GetUserPath(F_MAINLOG_IDX)));
-  RegisterListener(LogListener::CONSOLE_LISTENER, std::make_unique<ConsoleListener>());
+                   new FileLogListener(File::GetUserPath(F_MAINLOG_IDX)));
+  RegisterListener(LogListener::CONSOLE_LISTENER, new ConsoleListener());
 
   // Set up log listeners
   LogLevel verbosity = Config::Get(LOGGER_VERBOSITY);
@@ -172,7 +171,12 @@ LogManager::LogManager()
   m_path_cutoff_point = DeterminePathCutOffPoint();
 }
 
-LogManager::~LogManager() = default;
+LogManager::~LogManager()
+{
+  // The log window listener pointer is owned by the GUI code.
+  delete m_listeners[LogListener::CONSOLE_LISTENER];
+  delete m_listeners[LogListener::FILE_LISTENER];
+}
 
 void LogManager::SaveSettings()
 {
@@ -248,13 +252,12 @@ bool LogManager::IsEnabled(LogType type, LogLevel level) const
   return m_log[type].m_enable && GetLogLevel() >= level;
 }
 
-std::vector<LogManager::LogContainer> LogManager::GetLogTypes()
+std::map<std::string, std::string> LogManager::GetLogTypes()
 {
-  std::vector<LogContainer> log_types;
-  log_types.reserve(m_log.size());
+  std::map<std::string, std::string> log_types;
 
   for (const auto& container : m_log)
-    log_types.emplace_back(container);
+    log_types.emplace(container.m_short_name, container.m_full_name);
 
   return log_types;
 }
@@ -269,9 +272,9 @@ const char* LogManager::GetFullName(LogType type) const
   return m_log[type].m_full_name;
 }
 
-void LogManager::RegisterListener(LogListener::LISTENER id, std::unique_ptr<LogListener> listener)
+void LogManager::RegisterListener(LogListener::LISTENER id, LogListener* listener)
 {
-  m_listeners[id] = std::move(listener);
+  m_listeners[id] = listener;
 }
 
 void LogManager::EnableListener(LogListener::LISTENER id, bool enable)
@@ -285,22 +288,23 @@ bool LogManager::IsListenerEnabled(LogListener::LISTENER id) const
 }
 
 // Singleton. Ugh.
-static std::unique_ptr<LogManager> s_log_manager;
+static LogManager* s_log_manager;
 
 LogManager* LogManager::GetInstance()
 {
-  return s_log_manager.get();
+  return s_log_manager;
 }
 
 void LogManager::Init()
 {
-  s_log_manager = std::unique_ptr<LogManager>(new LogManager());
+  s_log_manager = new LogManager();
 }
 
 void LogManager::Shutdown()
 {
   if (s_log_manager)
     s_log_manager->SaveSettings();
-  s_log_manager.reset();
+  delete s_log_manager;
+  s_log_manager = nullptr;
 }
 }  // namespace Common::Log

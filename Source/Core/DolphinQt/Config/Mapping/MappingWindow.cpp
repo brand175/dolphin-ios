@@ -50,7 +50,7 @@
 #include "DolphinQt/Config/Mapping/WiimoteEmuMotionControlIMU.h"
 #include "DolphinQt/QtUtils/ModalMessageBox.h"
 #include "DolphinQt/QtUtils/NonDefaultQPushButton.h"
-#include "DolphinQt/QtUtils/QtUtils.h"
+#include "DolphinQt/QtUtils/SetWindowDecorations.h"
 #include "DolphinQt/QtUtils/WindowActivationEventFilter.h"
 #include "DolphinQt/QtUtils/WrapInScrollArea.h"
 #include "DolphinQt/Settings.h"
@@ -64,6 +64,7 @@ MappingWindow::MappingWindow(QWidget* parent, Type type, int port_num)
     : QDialog(parent), m_port(port_num)
 {
   setWindowTitle(tr("Port %1").arg(port_num + 1));
+  setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
   CreateDevicesLayout();
   CreateProfilesLayout();
@@ -95,8 +96,6 @@ MappingWindow::MappingWindow(QWidget* parent, Type type, int port_num)
                   [] { HotkeyManagerEmu::Enable(false); });
 
   MappingCommon::CreateMappingProcessor(this);
-
-  QtUtils::AdjustSizeWithinScreen(this);
 }
 
 void MappingWindow::CreateDevicesLayout()
@@ -270,6 +269,7 @@ void MappingWindow::OnDeleteProfilePressed()
     error.setIcon(QMessageBox::Critical);
     error.setWindowTitle(tr("Error"));
     error.setText(tr("The profile '%1' does not exist").arg(profile_name));
+    SetQWidgetWindowDecorations(&error);
     error.exec();
     return;
   }
@@ -282,6 +282,7 @@ void MappingWindow::OnDeleteProfilePressed()
   confirm.setInformativeText(tr("This cannot be undone!"));
   confirm.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
 
+  SetQWidgetWindowDecorations(&confirm);
   if (confirm.exec() != QMessageBox::Yes)
   {
     return;
@@ -309,6 +310,7 @@ void MappingWindow::OnLoadProfilePressed()
     error.setIcon(QMessageBox::Critical);
     error.setWindowTitle(tr("Error"));
     error.setText(tr("The profile '%1' does not exist").arg(m_profiles_combo->currentText()));
+    SetQWidgetWindowDecorations(&error);
     error.exec();
     return;
   }
@@ -320,7 +322,6 @@ void MappingWindow::OnLoadProfilePressed()
 
   m_controller->LoadConfig(ini.GetOrCreateSection("Profile"));
   m_controller->UpdateReferences(g_controller_interface);
-  m_controller->GetConfig()->GenerateControllerTextures();
 
   const auto lock = GetController()->GetStateLock();
   emit ConfigChanged();
@@ -541,7 +542,7 @@ void MappingWindow::PopulateProfileSelection()
 
 QWidget* MappingWindow::AddWidget(const QString& name, QWidget* widget)
 {
-  auto* const wrapper = GetWrappedWidget(widget);
+  QWidget* wrapper = GetWrappedWidget(widget, this, 150, 210);
   m_tab_widget->addTab(wrapper, name);
   return wrapper;
 }
@@ -560,7 +561,6 @@ void MappingWindow::OnDefaultFieldsPressed()
 {
   m_controller->LoadDefaults(g_controller_interface);
   m_controller->UpdateReferences(g_controller_interface);
-  m_controller->GetConfig()->GenerateControllerTextures();
 
   const auto lock = GetController()->GetStateLock();
   emit ConfigChanged();
@@ -578,7 +578,6 @@ void MappingWindow::OnClearFieldsPressed()
   m_controller->SetDefaultDevice(default_device);
 
   m_controller->UpdateReferences(g_controller_interface);
-  m_controller->GetConfig()->GenerateControllerTextures();
 
   const auto lock = GetController()->GetStateLock();
   emit ConfigChanged();

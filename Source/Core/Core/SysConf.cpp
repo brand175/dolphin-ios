@@ -228,13 +228,15 @@ SysConf::Entry& SysConf::AddEntry(Entry&& entry)
 
 SysConf::Entry* SysConf::GetEntry(std::string_view key)
 {
-  const auto iterator = std::ranges::find(m_entries, key, &Entry::name);
+  const auto iterator = std::find_if(m_entries.begin(), m_entries.end(),
+                                     [&key](const auto& entry) { return entry.name == key; });
   return iterator != m_entries.end() ? &*iterator : nullptr;
 }
 
 const SysConf::Entry* SysConf::GetEntry(std::string_view key) const
 {
-  const auto iterator = std::ranges::find(m_entries, key, &Entry::name);
+  const auto iterator = std::find_if(m_entries.begin(), m_entries.end(),
+                                     [&key](const auto& entry) { return entry.name == key; });
   return iterator != m_entries.end() ? &*iterator : nullptr;
 }
 

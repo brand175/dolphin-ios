@@ -15,7 +15,6 @@ import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.datepicker.CalendarConstraints
@@ -59,9 +58,6 @@ class SettingsAdapter(
 
     val settings: Settings?
         get() = fragmentView.settings
-
-    val fragmentActivity: FragmentActivity
-        get() = fragmentView.fragmentActivity
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SettingViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -351,15 +347,13 @@ class SettingsAdapter(
         dialog.setButton(
             AlertDialog.BUTTON_NEUTRAL,
             context.getString(R.string.clear)
-        ) { _: DialogInterface?, _: Int -> }
+        ) { _: DialogInterface?, _: Int ->
+            item.clearValue()
+            notifyItemChanged(position)
+            fragmentView.onSettingChanged()
+        }
         dialog.setCanceledOnTouchOutside(false)
         dialog.show()
-
-        // We're setting this OnClickListener late so that pressing the Clear button won't result
-        // in the dialog closing
-        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
-            dialog.expression = ""
-        }
     }
 
     fun onFilePickerDirectoryClick(item: SettingsItem, position: Int) {

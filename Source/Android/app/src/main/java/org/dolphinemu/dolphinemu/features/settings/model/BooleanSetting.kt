@@ -30,7 +30,7 @@ enum class BooleanSetting(
         "OverrideRegionSettings",
         false
     ),
-    MAIN_AUDIO_FILL_GAPS(Settings.FILE_DOLPHIN, Settings.SECTION_INI_CORE, "AudioFillGaps", true),
+    MAIN_AUDIO_STRETCH(Settings.FILE_DOLPHIN, Settings.SECTION_INI_CORE, "AudioStretch", false),
     MAIN_BBA_XLINK_CHAT_OSD(
         Settings.FILE_DOLPHIN,
         Settings.SECTION_INI_CORE,
@@ -100,12 +100,6 @@ enum class BooleanSetting(
         "OverclockEnable",
         false
     ),
-    MAIN_VI_OVERCLOCK_ENABLE(
-        Settings.FILE_DOLPHIN,
-        Settings.SECTION_INI_CORE,
-        "VIOverclockEnable",
-        false
-    ),
     MAIN_RAM_OVERRIDE_ENABLE(
         Settings.FILE_DOLPHIN,
         Settings.SECTION_INI_CORE,
@@ -138,12 +132,6 @@ enum class BooleanSetting(
     ),
     MAIN_WII_WIILINK_ENABLE(Settings.FILE_DOLPHIN, Settings.SECTION_INI_CORE, "EnableWiiLink", false),
     MAIN_DSP_JIT(Settings.FILE_DOLPHIN, Settings.SECTION_INI_DSP, "EnableJIT", true),
-    MAIN_TIME_TRACKING(
-        Settings.FILE_DOLPHIN,
-        Settings.SECTION_INI_GENERAL,
-        "EnablePlayTimeTracking",
-        true
-    ),
     MAIN_EXPAND_TO_CUTOUT_AREA(
         Settings.FILE_DOLPHIN,
         Settings.SECTION_INI_INTERFACE,
@@ -243,18 +231,6 @@ enum class BooleanSetting(
         Settings.SECTION_EMULATED_USB_DEVICES,
         "EmulateInfinityBase",
         false
-    ),
-    MAIN_EMULATE_WII_SPEAK(
-        Settings.FILE_DOLPHIN,
-        Settings.SECTION_EMULATED_USB_DEVICES,
-        "EmulateWiiSpeak",
-        false
-    ),
-    MAIN_WII_SPEAK_MUTED(
-        Settings.FILE_DOLPHIN,
-        Settings.SECTION_EMULATED_USB_DEVICES,
-        "WiiSpeakMuted",
-        true
     ),
     MAIN_SHOW_GAME_TITLES(
         Settings.FILE_DOLPHIN,
@@ -940,10 +916,8 @@ enum class BooleanSetting(
             MAIN_RAM_OVERRIDE_ENABLE,
             MAIN_CUSTOM_RTC_ENABLE,
             MAIN_DSP_JIT,
-            MAIN_TIME_TRACKING,
             MAIN_EMULATE_SKYLANDER_PORTAL,
-            MAIN_EMULATE_INFINITY_BASE,
-            MAIN_EMULATE_WII_SPEAK
+            MAIN_EMULATE_INFINITY_BASE
         )
         private val NOT_RUNTIME_EDITABLE: Set<BooleanSetting> =
             HashSet(listOf(*NOT_RUNTIME_EDITABLE_ARRAY))

@@ -32,7 +32,7 @@ class MemoryWidget : public QDockWidget
   Q_OBJECT
 public:
   explicit MemoryWidget(Core::System& system, QWidget* parent = nullptr);
-  ~MemoryWidget() override;
+  ~MemoryWidget();
 
   void SetAddress(u32 address);
   void Update();
@@ -82,7 +82,6 @@ private:
   void RegisterAfterFrameEventCallback();
   void RemoveAfterFrameEventCallback();
   void AutoUpdateTable();
-  void ActivateSearchAddress();
 
   Core::System& m_system;
 

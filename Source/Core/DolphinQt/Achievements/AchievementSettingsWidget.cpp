@@ -34,6 +34,10 @@ AchievementSettingsWidget::AchievementSettingsWidget(QWidget* parent) : QWidget(
 
   connect(&Settings::Instance(), &Settings::ConfigChanged, this,
           &AchievementSettingsWidget::LoadSettings);
+
+  // If hardcore is enabled when the emulator starts, make sure it turns off what it needs to
+  if (Config::Get(Config::RA_HARDCORE_ENABLED))
+    UpdateHardcoreMode();
 }
 
 void AchievementSettingsWidget::UpdateData(int login_failed_code)
@@ -252,9 +256,10 @@ void AchievementSettingsWidget::ToggleRAIntegration()
 
   auto& instance = AchievementManager::GetInstance();
   if (Config::Get(Config::RA_ENABLED))
-    instance.Init(reinterpret_cast<void*>(winId()));
+    instance.Init();
   else
     instance.Shutdown();
+  UpdateHardcoreMode();
 }
 
 void AchievementSettingsWidget::Login()
@@ -292,6 +297,7 @@ void AchievementSettingsWidget::ToggleHardcore()
     }
   }
   SaveSettings();
+  UpdateHardcoreMode();
 }
 
 void AchievementSettingsWidget::ToggleUnofficial()
@@ -319,6 +325,16 @@ void AchievementSettingsWidget::ToggleDiscordPresence()
 void AchievementSettingsWidget::ToggleProgress()
 {
   SaveSettings();
+}
+
+void AchievementSettingsWidget::UpdateHardcoreMode()
+{
+  if (Config::Get(Config::RA_HARDCORE_ENABLED))
+  {
+    Settings::Instance().SetDebugModeEnabled(false);
+  }
+  emit Settings::Instance().EmulationStateChanged(Core::GetState(Core::System::GetInstance()));
+  emit Settings::Instance().HardcoreStateChanged();
 }
 
 #endif  // USE_RETRO_ACHIEVEMENTS

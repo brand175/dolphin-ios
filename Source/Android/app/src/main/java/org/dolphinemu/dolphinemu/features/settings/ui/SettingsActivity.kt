@@ -230,6 +230,11 @@ class SettingsActivity : AppCompatActivity(), SettingsActivityView {
         fragment?.onSettingsFileLoaded(settings)
     }
 
+    override fun onSettingsFileNotFound() {
+        val fragment: SettingsFragmentView? = fragment
+        fragment?.loadDefaultSettings()
+    }
+
     override fun showToastMessage(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }

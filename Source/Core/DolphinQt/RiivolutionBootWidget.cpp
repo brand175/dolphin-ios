@@ -46,6 +46,7 @@ RiivolutionBootWidget::RiivolutionBootWidget(std::string game_id, std::optional<
       m_base_game_path(std::move(base_game_path))
 {
   setWindowTitle(tr("Start with Riivolution Patches"));
+  setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
   CreateWidgets();
   ConnectWidgets();

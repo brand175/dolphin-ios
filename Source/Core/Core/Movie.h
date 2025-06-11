@@ -192,6 +192,7 @@ public:
   bool IsConfigSaved() const;
   bool IsStartingFromClearSave() const;
   bool IsUsingMemcard(ExpansionInterface::Slot slot) const;
+  void SetGraphicsConfig();
   bool IsNetPlayRecording() const;
 
   bool IsUsingPad(int controller) const;

@@ -116,8 +116,6 @@ public:
   };
   static_assert(sizeof(DataFormat) == 6, "Wrong size");
 
-  using DesiredState = DataFormat;
-
   struct CalibrationData
   {
     using StickType = DataFormat::StickType;
@@ -160,7 +158,7 @@ public:
 
   ControllerEmu::ControlGroup* GetGroup(NunchukGroup group);
 
-  void LoadDefaults() override;
+  void LoadDefaults(const ControllerInterface& ciface) override;
 
   static constexpr u8 BUTTON_C = 0x02;
   static constexpr u8 BUTTON_Z = 0x01;

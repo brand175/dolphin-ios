@@ -4,7 +4,6 @@
 #include "Core/NetPlayClient.h"
 
 #include <algorithm>
-#include <array>
 #include <cstddef>
 #include <cstring>
 #include <fstream>
@@ -37,7 +36,6 @@
 
 #include "Core/ActionReplay.h"
 #include "Core/Boot/Boot.h"
-#include "Core/Config/GraphicsSettings.h"
 #include "Core/Config/MainSettings.h"
 #include "Core/Config/NetplaySettings.h"
 #include "Core/Config/SessionSettings.h"
@@ -160,7 +158,7 @@ NetPlayClient::NetPlayClient(const std::string& address, const u16 port, NetPlay
       return;
     }
 
-    // Update time in milliseconds of no acknowledgment of
+    // Update time in milliseconds of no acknoledgment of
     // sent packets before a connection is deemed disconnected
     enet_peer_timeout(m_server, 0, PEER_TIMEOUT.count(), PEER_TIMEOUT.count());
 
@@ -223,7 +221,7 @@ NetPlayClient::NetPlayClient(const std::string& address, const u16 port, NetPlay
         case ENET_EVENT_TYPE_CONNECT:
           m_server = netEvent.peer;
 
-          // Update time in milliseconds of no acknowledgment of
+          // Update time in milliseconds of no acknoledgment of
           // sent packets before a connection is deemed disconnected
           enet_peer_timeout(m_server, 0, PEER_TIMEOUT.count(), PEER_TIMEOUT.count());
 
@@ -327,7 +325,7 @@ bool NetPlayClient::Connect()
 static void ReceiveSyncIdentifier(sf::Packet& spac, SyncIdentifier& sync_identifier)
 {
   // We use a temporary variable here due to a potential long vs long long mismatch
-  u64 dol_elf_size;
+  sf::Uint64 dol_elf_size;
   spac >> dol_elf_size;
   sync_identifier.dol_elf_size = dol_elf_size;
 
@@ -609,7 +607,7 @@ void NetPlayClient::OnChunkedDataPayload(sf::Packet& packet)
   sf::Packet progress_packet;
   progress_packet << MessageID::ChunkedDataProgress;
   progress_packet << cid;
-  progress_packet << u64{data_packet.getDataSize()};
+  progress_packet << sf::Uint64{data_packet.getDataSize()};
   Send(progress_packet, CHUNKED_DATA_CHANNEL);
 }
 
@@ -862,8 +860,6 @@ void NetPlayClient::OnStartGame(sf::Packet& packet)
     packet >> m_net_settings.allow_sd_writes;
     packet >> m_net_settings.oc_enable;
     packet >> m_net_settings.oc_factor;
-    packet >> m_net_settings.vi_oc_enable;
-    packet >> m_net_settings.vi_oc_factor;
 
     for (auto slot : ExpansionInterface::SLOTS)
       packet >> m_net_settings.exi_device[slot];
@@ -1307,7 +1303,7 @@ void NetPlayClient::OnSyncSaveDataGBA(sf::Packet& packet)
 
 void NetPlayClient::OnSyncCodes(sf::Packet& packet)
 {
-  // Receive Data Packet
+  // Recieve Data Packet
   SyncCodeID sub_id;
   packet >> sub_id;
 
@@ -1533,7 +1529,7 @@ void NetPlayClient::Send(const sf::Packet& packet, const u8 channel_id)
 
 void NetPlayClient::DisplayPlayersPing()
 {
-  if (!Config::Get(Config::GFX_SHOW_NETPLAY_PING))
+  if (!g_ActiveConfig.bShowNetPlayPing)
     return;
 
   OSD::AddTypedMessage(OSD::MessageType::NetPlayPing, fmt::format("Ping: {}", GetPlayersMaxPing()),
@@ -1542,7 +1538,9 @@ void NetPlayClient::DisplayPlayersPing()
 
 u32 NetPlayClient::GetPlayersMaxPing() const
 {
-  return std::ranges::max_element(m_players, {}, [](const auto& kv) { return kv.second.ping; })
+  return std::max_element(
+             m_players.begin(), m_players.end(),
+             [](const auto& a, const auto& b) { return a.second.ping < b.second.ping; })
       ->second.ping;
 }
 
@@ -2409,14 +2407,22 @@ bool NetPlayClient::IsFirstInGamePad(int ingame_pad) const
                       [](auto mapping) { return mapping > 0; });
 }
 
+static int CountLocalPads(const PadMappingArray& pad_map, const PlayerId& local_player_pid)
+{
+  return static_cast<int>(
+      std::count_if(pad_map.begin(), pad_map.end(), [&local_player_pid](const auto& mapping) {
+        return mapping == local_player_pid;
+      }));
+}
+
 int NetPlayClient::NumLocalPads() const
 {
-  return std::ranges::count(m_pad_map, m_local_player->pid);
+  return CountLocalPads(m_pad_map, m_local_player->pid);
 }
 
 int NetPlayClient::NumLocalWiimotes() const
 {
-  return std::ranges::count(m_wiimote_map, m_local_player->pid);
+  return CountLocalPads(m_wiimote_map, m_local_player->pid);
 }
 
 static int InGameToLocal(int ingame_pad, const PadMappingArray& pad_map, PlayerId local_player_pid)
@@ -2520,7 +2526,7 @@ void NetPlayClient::SendTimeBase()
 
   if (netplay_client->m_timebase_frame % 60 == 0)
   {
-    const u64 timebase = Core::System::GetInstance().GetSystemTimers().GetFakeTimeBase();
+    const sf::Uint64 timebase = Core::System::GetInstance().GetSystemTimers().GetFakeTimeBase();
 
     sf::Packet packet;
     packet << MessageID::TimeBase;
@@ -2662,10 +2668,9 @@ std::string GetPlayerMappingString(PlayerId pid, const PadMappingArray& pad_map,
       wiimote_slots.push_back(i + 1);
   }
   std::vector<std::string> groups;
-  std::array<std::pair<std::string, std::vector<size_t>*>, 3> slot_groups = {
-      {{"GC", &gc_slots}, {"GBA", &gba_slots}, {"Wii", &wiimote_slots}}};
-
-  for (const auto& [group_name, slots] : slot_groups)
+  for (const auto& [group_name, slots] :
+       {std::make_pair("GC", &gc_slots), std::make_pair("GBA", &gba_slots),
+        std::make_pair("Wii", &wiimote_slots)})
   {
     if (!slots->empty())
       groups.emplace_back(fmt::format("{}{}", group_name, fmt::join(*slots, ",")));

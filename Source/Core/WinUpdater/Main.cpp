@@ -52,7 +52,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
   {
     if (IsUserAnAdmin())
     {
-      MessageBox(nullptr, L"Failed to write to directory despite administrator privileges.",
+      MessageBox(nullptr, L"Failed to write to directory despite administrator priviliges.",
                  L"Error", MB_ICONERROR);
       return 1;
     }

@@ -29,8 +29,9 @@ jmethodID GetGameFileConstructor();
 jclass GetGameFileCacheClass();
 jfieldID GetGameFileCachePointer();
 
-jclass GetPairClass();
-jmethodID GetPairConstructor();
+jclass GetLinkedHashMapClass();
+jmethodID GetLinkedHashMapInit();
+jmethodID GetLinkedHashMapPut();
 
 jclass GetHashMapClass();
 jmethodID GetHashMapInit();
@@ -92,10 +93,6 @@ jclass GetControlReferenceClass();
 jfieldID GetControlReferencePointer();
 jmethodID GetControlReferenceConstructor();
 
-jclass GetControlGroupContainerClass();
-jfieldID GetControlGroupContainerPointer();
-jmethodID GetControlGroupContainerConstructor();
-
 jclass GetEmulatedControllerClass();
 jfieldID GetEmulatedControllerPointer();
 jmethodID GetEmulatedControllerConstructor();
@@ -112,17 +109,6 @@ jclass GetCoreDeviceControlClass();
 jfieldID GetCoreDeviceControlPointer();
 jmethodID GetCoreDeviceControlConstructor();
 
-jclass GetInputDetectorClass();
-jfieldID GetInputDetectorPointer();
-
-jclass GetPermissionHandlerClass();
-jmethodID GetPermissionHandlerHasRecordAudioPermission();
-jmethodID GetPermissionHandlerRequestRecordAudioPermission();
-
 jmethodID GetRunnableRun();
-
-jclass GetAudioUtilsClass();
-jmethodID GetAudioUtilsGetSampleRate();
-jmethodID GetAudioUtilsGetFramesPerBuffer();
 
 }  // namespace IDCache

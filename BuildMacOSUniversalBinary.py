@@ -57,8 +57,12 @@ DEFAULT_CONFIG = {
     # SHA checksum to verify the integrity of the app. This doesn't
     # protect against malicious actors, but it does protect against
     # running corrupted binaries and allows for access to the extended
-    # permissions needed for ARM builds
+    # permisions needed for ARM builds
     "codesign_identity":  "-",
+
+    # Minimum macOS version for each architecture slice
+    "arm64_mac_os_deployment_target":  "11.0.0",
+    "x86_64_mac_os_deployment_target": "10.15.0",
 
     # CMake Generator to use for building
     "generator": "Unix Makefiles",
@@ -73,7 +77,7 @@ DEFAULT_CONFIG = {
     "distributor": "None"
 }
 
-# Architectures to build for. This is explicitly left out of the command line
+# Architectures to build for. This is explicity left out of the command line
 # config options for several reasons:
 # 1) Adding new architectures will generally require more code changes
 # 2) Single architecture builds should utilize the normal generated cmake
@@ -141,6 +145,11 @@ def parse_args(conf=DEFAULT_CONFIG):
              f"--{arch}_qt5_path",
              help=f"Install path for {arch} qt5 libraries",
              default=conf[arch+"_qt5_path"])
+
+        parser.add_argument(
+             f"--{arch}_mac_os_deployment_target",
+             help=f"Deployment architecture for {arch} slice",
+             default=conf[arch+"_mac_os_deployment_target"])
 
     return vars(parser.parse_args())
 
@@ -288,7 +297,8 @@ def build(config):
                 "-DCMAKE_PREFIX_PATH="+prefix_path,
                 "-DCMAKE_SYSTEM_PROCESSOR="+arch,
                 "-DCMAKE_IGNORE_PATH="+ignore_path,
-                "-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0.0",
+                "-DCMAKE_OSX_DEPLOYMENT_TARGET="
+                + config[arch+"_mac_os_deployment_target"],
                 "-DMACOS_CODE_SIGNING_IDENTITY="
                 + config["codesign_identity"],
                 '-DMACOS_CODE_SIGNING="ON"',

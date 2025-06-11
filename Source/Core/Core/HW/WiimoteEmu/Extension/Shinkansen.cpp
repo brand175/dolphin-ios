@@ -57,8 +57,6 @@ Shinkansen::Shinkansen() : Extension3rdParty("Shinkansen", _trans("Shinkansen Co
 
 void Shinkansen::BuildDesiredExtensionState(DesiredExtensionState* target_state)
 {
-  using ControllerEmu::MapFloat;
-
   DesiredState& state = target_state->data.emplace<DesiredState>();
 
   const auto analog = m_levers->GetState().data;
@@ -106,7 +104,7 @@ void Shinkansen::Update(const DesiredExtensionState& target_state)
   ext_data.buttons = desired_state.buttons ^ 0xFFFF;
   Common::BitCastPtr<DataFormat>(&m_reg.controller_data) = ext_data;
 
-  const auto lock = ControllerEmu::EmulatedController::GetStateLock();
+  const auto lock = GetStateLock();
   m_led->controls[0]->control_ref->State(m_reg.identifier[1]);
 }
 

@@ -12,7 +12,7 @@ TEST(Event, MultiThreaded)
 {
   Event has_sent, can_send;
   int shared_obj;
-  constexpr int ITERATIONS_COUNT = 100000;
+  const int ITERATIONS_COUNT = 100000;
 
   auto sender = [&]() {
     for (int i = 0; i < ITERATIONS_COUNT; ++i)

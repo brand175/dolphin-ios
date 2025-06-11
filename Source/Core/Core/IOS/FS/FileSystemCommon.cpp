@@ -95,7 +95,8 @@ Result<FileStatus> FileHandle::GetStatus() const
 Result<FileHandle> FileSystem::CreateAndOpenFile(Uid uid, Gid gid, const std::string& path,
                                                  Modes modes)
 {
-  if (Result<FileHandle> file = OpenFile(uid, gid, path, Mode::ReadWrite))
+  Result<FileHandle> file = OpenFile(uid, gid, path, Mode::ReadWrite);
+  if (file.Succeeded())
     return file;
 
   const ResultCode result = CreateFile(uid, gid, path, 0, modes);

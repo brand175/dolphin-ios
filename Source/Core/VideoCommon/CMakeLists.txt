@@ -49,8 +49,6 @@ add_library(videocommon
   CPUCullImpl.h
   DriverDetails.cpp
   DriverDetails.h
-  EFBInterface.cpp
-  EFBInterface.h
   Fifo.cpp
   Fifo.h
   FramebufferManager.cpp
@@ -136,6 +134,8 @@ add_library(videocommon
   PostProcessing.h
   Present.cpp
   Present.h
+  RenderBase.cpp
+  RenderBase.h
   RenderState.cpp
   RenderState.h
   ShaderCache.cpp

@@ -44,11 +44,10 @@ struct Viewport
 
 /// Gets the list of Metal devices, ordered so the system default device is first
 std::vector<MRCOwned<id<MTLDevice>>> GetAdapterList();
-void PopulateBackendInfo(BackendInfo* backend_info);
-void PopulateBackendInfoAdapters(BackendInfo* backend_info,
+void PopulateBackendInfo(VideoConfig* config);
+void PopulateBackendInfoAdapters(VideoConfig* config,
                                  const std::vector<MRCOwned<id<MTLDevice>>>& adapters);
-void PopulateBackendInfoFeatures(const VideoConfig& config, BackendInfo* backend_info,
-                                 id<MTLDevice> device);
+void PopulateBackendInfoFeatures(VideoConfig* config, id<MTLDevice> device);
 
 AbstractTextureFormat ToAbstract(MTLPixelFormat format);
 MTLPixelFormat FromAbstract(AbstractTextureFormat format);

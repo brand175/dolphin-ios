@@ -30,6 +30,7 @@
 #include "DolphinQt/Debugger/BreakpointDialog.h"
 #include "DolphinQt/Debugger/MemoryWidget.h"
 #include "DolphinQt/Host.h"
+#include "DolphinQt/QtUtils/SetWindowDecorations.h"
 #include "DolphinQt/Resources.h"
 #include "DolphinQt/Settings.h"
 
@@ -64,8 +65,7 @@ public:
   CustomDelegate(BreakpointWidget* parent) : QStyledItemDelegate(parent) {}
 
 private:
-  void paint(QPainter* painter, const QStyleOptionViewItem& option,
-             const QModelIndex& index) const override
+  void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
   {
     Q_ASSERT(index.isValid());
 
@@ -442,6 +442,7 @@ void BreakpointWidget::OnNewBreakpoint()
 {
   BreakpointDialog* dialog = new BreakpointDialog(this);
   dialog->setAttribute(Qt::WA_DeleteOnClose, true);
+  SetQWidgetWindowDecorations(dialog);
   dialog->exec();
 }
 
@@ -452,6 +453,7 @@ void BreakpointWidget::OnEditBreakpoint(u32 address, bool is_instruction_bp)
     auto* dialog = new BreakpointDialog(
         this, m_system.GetPowerPC().GetBreakPoints().GetRegularBreakpoint(address));
     dialog->setAttribute(Qt::WA_DeleteOnClose, true);
+    SetQWidgetWindowDecorations(dialog);
     dialog->exec();
   }
   else
@@ -459,6 +461,7 @@ void BreakpointWidget::OnEditBreakpoint(u32 address, bool is_instruction_bp)
     auto* dialog =
         new BreakpointDialog(this, m_system.GetPowerPC().GetMemChecks().GetMemCheck(address));
     dialog->setAttribute(Qt::WA_DeleteOnClose, true);
+    SetQWidgetWindowDecorations(dialog);
     dialog->exec();
   }
 

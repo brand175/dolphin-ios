@@ -3,10 +3,13 @@
 
 #include "VideoBackends/Vulkan/VideoBackend.h"
 
+#include <vector>
+
 #include "Common/Logging/LogManager.h"
 #include "Common/MsgHandler.h"
 
 #include "VideoBackends/Vulkan/CommandBufferManager.h"
+#include "VideoBackends/Vulkan/Constants.h"
 #include "VideoBackends/Vulkan/ObjectCache.h"
 #include "VideoBackends/Vulkan/StateTracker.h"
 #include "VideoBackends/Vulkan/VKBoundingBox.h"
@@ -16,7 +19,9 @@
 #include "VideoBackends/Vulkan/VKVertexManager.h"
 #include "VideoBackends/Vulkan/VulkanContext.h"
 
+#include "VideoCommon/FramebufferManager.h"
 #include "VideoCommon/TextureCacheBase.h"
+#include "VideoCommon/VideoBackendBase.h"
 #include "VideoCommon/VideoConfig.h"
 
 #if defined(VK_USE_PLATFORM_METAL_EXT)
@@ -27,7 +32,7 @@ namespace Vulkan
 {
 void VideoBackend::InitBackendInfo(const WindowSystemInfo& wsi)
 {
-  VulkanContext::PopulateBackendInfo(&g_backend_info);
+  VulkanContext::PopulateBackendInfo(&g_Config);
 
   if (LoadVulkanLibrary())
   {
@@ -39,7 +44,7 @@ void VideoBackend::InitBackendInfo(const WindowSystemInfo& wsi)
       if (LoadVulkanInstanceFunctions(temp_instance))
       {
         VulkanContext::GPUList gpu_list = VulkanContext::EnumerateGPUs(temp_instance);
-        VulkanContext::PopulateBackendInfoAdapters(&g_backend_info, gpu_list);
+        VulkanContext::PopulateBackendInfoAdapters(&g_Config, gpu_list);
 
         if (!gpu_list.empty())
         {
@@ -50,8 +55,8 @@ void VideoBackend::InitBackendInfo(const WindowSystemInfo& wsi)
 
           VkPhysicalDevice gpu = gpu_list[device_index];
           VulkanContext::PhysicalDeviceInfo properties(gpu);
-          VulkanContext::PopulateBackendInfoFeatures(&g_backend_info, gpu, properties);
-          VulkanContext::PopulateBackendInfoMultisampleModes(&g_backend_info, gpu, properties);
+          VulkanContext::PopulateBackendInfoFeatures(&g_Config, gpu, properties);
+          VulkanContext::PopulateBackendInfoMultisampleModes(&g_Config, gpu, properties);
         }
       }
 
@@ -139,8 +144,8 @@ bool VideoBackend::Initialize(const WindowSystemInfo& wsi)
   }
 
   // Populate BackendInfo with as much information as we can at this point.
-  VulkanContext::PopulateBackendInfo(&g_backend_info);
-  VulkanContext::PopulateBackendInfoAdapters(&g_backend_info, gpu_list);
+  VulkanContext::PopulateBackendInfo(&g_Config);
+  VulkanContext::PopulateBackendInfoAdapters(&g_Config, gpu_list);
 
   // We need the surface before we can create a device, as some parameters depend on it.
   VkSurfaceKHR surface = VK_NULL_HANDLE;
@@ -178,11 +183,11 @@ bool VideoBackend::Initialize(const WindowSystemInfo& wsi)
 
   // Since VulkanContext maintains a copy of the device features and properties, we can use this
   // to initialize the backend information, so that we don't need to enumerate everything again.
-  VulkanContext::PopulateBackendInfoFeatures(&g_backend_info, g_vulkan_context->GetPhysicalDevice(),
+  VulkanContext::PopulateBackendInfoFeatures(&g_Config, g_vulkan_context->GetPhysicalDevice(),
                                              g_vulkan_context->GetDeviceInfo());
   VulkanContext::PopulateBackendInfoMultisampleModes(
-      &g_backend_info, g_vulkan_context->GetPhysicalDevice(), g_vulkan_context->GetDeviceInfo());
-  g_backend_info.bSupportsExclusiveFullscreen =
+      &g_Config, g_vulkan_context->GetPhysicalDevice(), g_vulkan_context->GetDeviceInfo());
+  g_Config.backend_info.bSupportsExclusiveFullscreen =
       enable_surface && g_vulkan_context->SupportsExclusiveFullscreen(wsi, surface);
 
   UpdateActiveConfig();

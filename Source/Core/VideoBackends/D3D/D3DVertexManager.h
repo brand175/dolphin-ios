@@ -20,7 +20,7 @@ class D3DVertexFormat : public NativeVertexFormat
 {
 public:
   D3DVertexFormat(const PortableVertexDeclaration& vtx_decl);
-  ~D3DVertexFormat() override;
+  ~D3DVertexFormat();
   ID3D11InputLayout* GetInputLayout(const void* vs_bytecode, size_t vs_bytecode_size);
 
 private:
@@ -36,9 +36,9 @@ class VertexManager : public VertexManagerBase
 {
 public:
   VertexManager();
-  ~VertexManager() override;
+  ~VertexManager();
 
-  bool Initialize() override;
+  bool Initialize();
 
   void UploadUtilityUniforms(const void* uniforms, u32 uniforms_size) override;
   bool UploadTexelBuffer(const void* data, u32 data_size, TexelBufferFormat format,

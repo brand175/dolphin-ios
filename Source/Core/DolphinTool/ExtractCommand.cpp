@@ -39,7 +39,8 @@ static std::unique_ptr<DiscIO::FileInfo> GetFileInfo(const DiscIO::Volume& disc_
   if (!filesystem)
     return nullptr;
 
-  return filesystem->FindFileInfo(path);
+  std::unique_ptr<DiscIO::FileInfo> info = filesystem->FindFileInfo(path);
+  return info;
 }
 
 static bool VolumeSupported(const DiscIO::Volume& disc_volume)
@@ -175,8 +176,7 @@ static bool ListVolume(const DiscIO::Volume& disc_volume, const std::string& pat
 }
 
 static bool HandleExtractPartition(const std::string& output, const std::string& single_file_path,
-                                   const std::string& partition_name,
-                                   const DiscIO::Volume& disc_volume,
+                                   const std::string& partition_name, DiscIO::Volume& disc_volume,
                                    const DiscIO::Partition& partition, bool quiet, bool single)
 {
   std::string file;
@@ -188,8 +188,7 @@ static bool HandleExtractPartition(const std::string& output, const std::string&
     return true;
   }
 
-  const auto file_info = GetFileInfo(disc_volume, partition, single_file_path);
-  if (file_info != nullptr)
+  if (auto file_info = GetFileInfo(disc_volume, partition, single_file_path); file_info != nullptr)
   {
     file.append("files/").append(single_file_path);
     File::CreateFullPath(file);

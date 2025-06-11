@@ -27,7 +27,6 @@ struct Config final
 {
   Config();
   void Refresh();
-  void Shutdown();
 
   CameraConfig camera_config;
   bool enabled;

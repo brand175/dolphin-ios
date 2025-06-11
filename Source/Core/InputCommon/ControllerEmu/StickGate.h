@@ -8,6 +8,7 @@
 
 #include "Common/Matrix.h"
 
+#include "InputCommon/ControlReference/ControlReference.h"
 #include "InputCommon/ControllerEmu/ControlGroup/ControlGroup.h"
 #include "InputCommon/ControllerEmu/Setting/NumericSetting.h"
 
@@ -36,8 +37,8 @@ class OctagonStickGate : public StickGate
 public:
   // Radius of circumscribed circle
   explicit OctagonStickGate(ControlState radius);
-  ControlState GetRadiusAtAngle(double ang) const final;
-  std::optional<u32> GetIdealCalibrationSampleCount() const final;
+  ControlState GetRadiusAtAngle(double ang) const override final;
+  std::optional<u32> GetIdealCalibrationSampleCount() const override final;
 
 private:
   const ControlState m_radius;
@@ -48,8 +49,8 @@ class RoundStickGate : public StickGate
 {
 public:
   explicit RoundStickGate(ControlState radius);
-  ControlState GetRadiusAtAngle(double ang) const final;
-  std::optional<u32> GetIdealCalibrationSampleCount() const final;
+  ControlState GetRadiusAtAngle(double ang) const override final;
+  std::optional<u32> GetIdealCalibrationSampleCount() const override final;
 
 private:
   const ControlState m_radius;
@@ -60,8 +61,8 @@ class SquareStickGate : public StickGate
 {
 public:
   explicit SquareStickGate(ControlState half_width);
-  ControlState GetRadiusAtAngle(double ang) const final;
-  std::optional<u32> GetIdealCalibrationSampleCount() const final;
+  ControlState GetRadiusAtAngle(double ang) const override final;
+  std::optional<u32> GetIdealCalibrationSampleCount() const override final;
 
 private:
   const ControlState m_half_width;
@@ -116,8 +117,8 @@ protected:
   virtual Control* GetModifierInput() const;
 
 private:
-  void LoadConfig(Common::IniFile::Section*, const std::string& base_name) override;
-  void SaveConfig(Common::IniFile::Section*, const std::string& base_name) override;
+  void LoadConfig(Common::IniFile::Section*, const std::string&, const std::string&) override;
+  void SaveConfig(Common::IniFile::Section*, const std::string&, const std::string&) override;
 
   CalibrationData m_calibration;
   SettingValue<double> m_deadzone_setting;

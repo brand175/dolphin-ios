@@ -71,7 +71,7 @@ class SWShader final : public AbstractShader
 {
 public:
   explicit SWShader(ShaderStage stage) : AbstractShader(stage) {}
-  ~SWShader() override = default;
+  ~SWShader() = default;
 
   BinaryData GetBinary() const override { return {}; }
 };

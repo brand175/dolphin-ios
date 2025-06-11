@@ -521,9 +521,10 @@ void RegCache::BindToRegister(preg_t i, bool doLoad, bool makeDirty)
     }
 
     ASSERT_MSG(DYNA_REC,
-               std::ranges::none_of(
-                   m_regs, [xr](const auto& l) { return l.has_value() && l->IsSimpleReg(xr); },
-                   &PPCCachedReg::Location),
+               std::none_of(m_regs.begin(), m_regs.end(),
+                            [xr](const auto& r) {
+                              return r.Location().has_value() && r.Location()->IsSimpleReg(xr);
+                            }),
                "Xreg {} already bound", Common::ToUnderlying(xr));
 
     m_regs[i].SetBoundTo(xr);

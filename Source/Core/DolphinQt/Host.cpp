@@ -291,9 +291,7 @@ void Host_RequestRenderWindowSize(int w, int h)
 
 bool Host_UIBlocksControllerState()
 {
-  // TODO: Remove the Paused check once async presentation is implemented.
-  return ImGui::GetCurrentContext() && ImGui::GetIO().WantCaptureKeyboard &&
-         Core::GetState(Core::System::GetInstance()) != Core::State::Paused;
+  return ImGui::GetCurrentContext() && ImGui::GetIO().WantCaptureKeyboard;
 }
 
 void Host_RefreshDSPDebuggerWindow()

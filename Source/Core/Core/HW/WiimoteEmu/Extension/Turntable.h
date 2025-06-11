@@ -54,8 +54,6 @@ public:
   };
   static_assert(sizeof(DataFormat) == 6, "Wrong size");
 
-  using DesiredState = DataFormat;
-
   Turntable();
 
   void BuildDesiredExtensionState(DesiredExtensionState* target_state) override;

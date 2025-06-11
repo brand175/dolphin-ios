@@ -123,11 +123,6 @@ public:
     case Qt::Key_PageDown:
       m_view->m_address += this->rowCount() * m_view->m_bytes_per_row;
       break;
-    case Qt::Key_G:
-      if (event->modifiers() == Qt::ControlModifier)
-      {
-        m_view->TriggerActivateSearch();
-      }
     default:
       QWidget::keyPressEvent(event);
       return;
@@ -255,11 +250,6 @@ void MemoryViewWidget::UpdateFont(const QFont& font)
   m_table->setFont(font);
 
   UpdateDispatcher(UpdateType::Full);
-}
-
-void MemoryViewWidget::TriggerActivateSearch()
-{
-  emit ActivateSearch();
 }
 
 constexpr int GetTypeSize(MemoryViewWidget::Type type)

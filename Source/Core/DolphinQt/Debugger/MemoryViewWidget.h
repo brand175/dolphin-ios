@@ -105,14 +105,12 @@ signals:
   void AutoUpdate();
   void ShowCode(u32 address);
   void RequestWatch(QString name, u32 address);
-  void ActivateSearch();
 
 private:
   void OnContextMenu(const QPoint& pos);
   void OnCopyAddress(u32 addr);
   void OnCopyHex(u32 addr);
   void UpdateBreakpointTags();
-  void TriggerActivateSearch();
   void UpdateColumns();
   void ScrollbarActionTriggered(int action);
   void ScrollbarSliderReleased();

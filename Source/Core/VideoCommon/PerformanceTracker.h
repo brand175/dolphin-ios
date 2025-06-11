@@ -3,50 +3,78 @@
 
 #pragma once
 
-#include <atomic>
-#include <deque>
+#include <array>
+#include <chrono>
 #include <fstream>
 #include <optional>
+#include <shared_mutex>
 
 #include "Common/CommonTypes.h"
-#include "Common/SPSCQueue.h"
 
 class PerformanceTracker
 {
+private:
+  // Must be powers of 2 for masking to work
+  static constexpr u64 MAX_DT_QUEUE_SIZE = 1UL << 12;
+  static constexpr u64 MAX_QUALITY_GRAPH_SIZE = 1UL << 8;
+
+  static inline std::size_t IncrementIndex(const std::size_t index)
+  {
+    return (index + 1) & (MAX_DT_QUEUE_SIZE - 1);
+  }
+
+  static inline std::size_t DecrementIndex(const std::size_t index)
+  {
+    return (index - 1) & (MAX_DT_QUEUE_SIZE - 1);
+  }
+
+  static inline std::size_t GetDifference(const std::size_t begin, const std::size_t end)
+  {
+    return (end - begin) & (MAX_DT_QUEUE_SIZE - 1);
+  }
+
 public:
   PerformanceTracker(const std::optional<std::string> log_name = std::nullopt,
-                     const std::optional<DT> sample_window_duration = std::nullopt);
-  ~PerformanceTracker() = default;
+                     const std::optional<s64> sample_window_us = std::nullopt);
+  ~PerformanceTracker();
 
   PerformanceTracker(const PerformanceTracker&) = delete;
   PerformanceTracker& operator=(const PerformanceTracker&) = delete;
   PerformanceTracker(PerformanceTracker&&) = delete;
   PerformanceTracker& operator=(PerformanceTracker&&) = delete;
 
+  // Functions for recording performance information
   void Reset();
-
-  // Calls must come from the same thread.
-  // UpdateStats is expected to be called regularly to empty the SPSC queue.
-  void UpdateStats();
-  void ImPlotPlotLines(const char* label) const;
-
-  // May call from any thread, but not concurrently, not that you'd want to..
   void Count();
 
-  // May call from any thread.
+  // Functions for reading performance information
   DT GetSampleWindow() const;
+
   double GetHzAvg() const;
+
   DT GetDtAvg() const;
   DT GetDtStd() const;
+
   DT GetLastRawDt() const;
-  void InvalidateLastTime();
 
-private:
+  void ImPlotPlotLines(const char* label) const;
+
+private:  // Functions for managing dt queue
+  inline void QueueClear();
+  inline void QueuePush(DT dt);
+  inline const DT& QueuePop();
+  inline const DT& QueueTop() const;
+  inline const DT& QueueBottom() const;
+
+  std::size_t inline QueueSize() const;
+  bool inline QueueEmpty() const;
+
+  // Handle pausing and logging
   void LogRenderTimeToFile(DT val);
+  void SetPaused(bool paused);
 
-  void HandleRawDt(DT value);
-  void PushFront(DT value);
-  void PopBack();
+  bool m_paused = false;
+  int m_on_state_changed_handle;
 
   // Name of log file and file stream
   std::optional<std::string> m_log_name;
@@ -54,22 +82,23 @@ private:
 
   // Last time Count() was called
   TimePoint m_last_time;
-  std::atomic<bool> m_is_last_time_sane = false;
-
-  // Push'd from Count()
-  //  and Pop'd from UpdateStats()
-  Common::SPSCQueue<DT> m_raw_dts;
-  std::atomic<DT> m_last_raw_dt = DT::zero();
 
   // Amount of time to sample dt's over (defaults to config)
-  const std::optional<DT> m_sample_window_duration;
+  const std::optional<s64> m_sample_window_us;
 
   // Queue + Running Total used to calculate average dt
   DT m_dt_total = DT::zero();
-  std::deque<DT> m_dt_queue;
+  std::array<DT, MAX_DT_QUEUE_SIZE> m_dt_queue;
+  std::size_t m_dt_queue_begin = 0;
+  std::size_t m_dt_queue_end = 0;
 
   // Average rate/time throughout the window
-  std::atomic<DT> m_dt_avg = DT::zero();  // Uses Moving Average
-  std::atomic<double> m_hz_avg = 0.0;     // Uses Moving Average + Euler Average
-  std::atomic<DT> m_dt_std = DT::zero();
+  DT m_dt_avg = DT::zero();  // Uses Moving Average
+  double m_hz_avg = 0.0;     // Uses Moving Average + Euler Average
+
+  // Used to initialize this on demand instead of on every Count()
+  mutable std::optional<DT> m_dt_std = std::nullopt;
+
+  // Used to enable thread safety with the performance tracker
+  mutable std::shared_mutex m_mutex;
 };

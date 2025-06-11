@@ -21,7 +21,7 @@ class CSIDevice_GBAEmu final : public ISIDevice
 {
 public:
   CSIDevice_GBAEmu(Core::System& system, SIDevices device, int device_number);
-  ~CSIDevice_GBAEmu() override;
+  ~CSIDevice_GBAEmu();
 
   int RunBuffer(u8* buffer, int request_length) override;
   int TransferInterval() override;

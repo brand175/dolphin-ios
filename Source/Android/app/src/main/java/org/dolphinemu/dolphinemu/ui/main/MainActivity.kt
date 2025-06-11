@@ -27,8 +27,8 @@ import org.dolphinemu.dolphinemu.features.settings.ui.MenuTag
 import org.dolphinemu.dolphinemu.features.settings.ui.SettingsActivity
 import org.dolphinemu.dolphinemu.fragments.GridOptionDialogFragment
 import org.dolphinemu.dolphinemu.services.GameFileCacheManager
+import org.dolphinemu.dolphinemu.ui.platform.Platform
 import org.dolphinemu.dolphinemu.ui.platform.PlatformGamesView
-import org.dolphinemu.dolphinemu.ui.platform.PlatformTab
 import org.dolphinemu.dolphinemu.utils.Action1
 import org.dolphinemu.dolphinemu.utils.AfterDirectoryInitializationRunner
 import org.dolphinemu.dolphinemu.utils.DirectoryInitialization
@@ -103,6 +103,11 @@ class MainActivity : AppCompatActivity(), MainView, OnRefreshListener, ThemeProv
         presenter.onResume()
     }
 
+    override fun onStart() {
+        super.onStart()
+        StartupHandler.checkSessionReset(this)
+    }
+
     override fun onStop() {
         super.onStop()
         if (isChangingConfigurations) {
@@ -111,6 +116,8 @@ class MainActivity : AppCompatActivity(), MainView, OnRefreshListener, ThemeProv
             // If the currently selected platform tab changed, save it to disk
             NativeConfig.save(NativeConfig.LAYER_BASE)
         }
+
+        StartupHandler.setSessionTime(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -258,17 +265,17 @@ class MainActivity : AppCompatActivity(), MainView, OnRefreshListener, ThemeProv
         GridOptionDialogFragment().show(supportFragmentManager, "gridOptions")
 
     private fun forEachPlatformGamesView(action: Action1<PlatformGamesView>) {
-        for (platformTab in PlatformTab.values()) {
-            val fragment = getPlatformGamesView(platformTab)
+        for (platform in Platform.values()) {
+            val fragment = getPlatformGamesView(platform)
             if (fragment != null) {
                 action.call(fragment)
             }
         }
     }
 
-    private fun getPlatformGamesView(platformTab: PlatformTab): PlatformGamesView? {
+    private fun getPlatformGamesView(platform: Platform): PlatformGamesView? {
         val fragmentTag =
-            "android:switcher:" + binding.pagerPlatforms.id + ":" + platformTab.toInt()
+            "android:switcher:" + binding.pagerPlatforms.id + ":" + platform.toInt()
         return supportFragmentManager.findFragmentByTag(fragmentTag) as PlatformGamesView?
     }
 

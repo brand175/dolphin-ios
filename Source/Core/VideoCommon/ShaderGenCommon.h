@@ -345,3 +345,5 @@ struct CustomPixelShaderContents
 
   bool operator==(const CustomPixelShaderContents& other) const = default;
 };
+
+void WriteCustomShaderStructDef(ShaderCode* out, u32 numtexgens);

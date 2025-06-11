@@ -183,8 +183,7 @@ void LoadPatches()
   LoadPatchSection("OnFrame", &s_on_frame, globalIni, localIni);
 
 #ifdef USE_RETRO_ACHIEVEMENTS
-  AchievementManager::GetInstance().FilterApprovedPatches(s_on_frame, sconfig.GetGameID(),
-                                                          sconfig.GetRevision());
+  AchievementManager::GetInstance().FilterApprovedPatches(s_on_frame, sconfig.GetGameID());
 #endif  // USE_RETRO_ACHIEVEMENTS
 
   // Check if I'm syncing Codes
@@ -195,10 +194,8 @@ void LoadPatches()
   }
   else
   {
-    Gecko::SetActiveCodes(Gecko::LoadCodes(globalIni, localIni), sconfig.GetGameID(),
-                          sconfig.GetRevision());
-    ActionReplay::LoadAndApplyCodes(globalIni, localIni, sconfig.GetGameID(),
-                                    sconfig.GetRevision());
+    Gecko::SetActiveCodes(Gecko::LoadCodes(globalIni, localIni), sconfig.GetGameID());
+    ActionReplay::LoadAndApplyCodes(globalIni, localIni, sconfig.GetGameID());
   }
 }
 
@@ -343,7 +340,7 @@ bool ApplyFramePatches(Core::System& system)
 void Shutdown()
 {
   s_on_frame.clear();
-  ActionReplay::ApplyCodes({}, "", 0);
+  ActionReplay::ApplyCodes({}, "");
   Gecko::Shutdown();
 }
 

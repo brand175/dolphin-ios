@@ -8,7 +8,6 @@
 #include <cstring>
 #include <functional>
 #include <mutex>
-#include <optional>
 #include <queue>
 #include <utility>
 #include <variant>
@@ -30,18 +29,21 @@
 #include "Common/FPURoundMode.h"
 #include "Common/FatFsUtil.h"
 #include "Common/FileUtil.h"
+#include "Common/Flag.h"
 #include "Common/Logging/Log.h"
+#include "Common/MemoryUtil.h"
 #include "Common/MsgHandler.h"
 #include "Common/ScopeGuard.h"
 #include "Common/StringUtil.h"
 #include "Common/Thread.h"
-#include "Common/TimeUtil.h"
+#include "Common/Timer.h"
 #include "Common/Version.h"
 
 #include "Core/AchievementManager.h"
 #include "Core/Boot/Boot.h"
 #include "Core/BootManager.h"
 #include "Core/CPUThreadConfigCallback.h"
+#include "Core/Config/AchievementSettings.h"
 #include "Core/Config/MainSettings.h"
 #include "Core/ConfigManager.h"
 #include "Core/CoreTiming.h"
@@ -90,6 +92,7 @@
 #include "VideoCommon/FrameDumper.h"
 #include "VideoCommon/OnScreenDisplay.h"
 #include "VideoCommon/PerformanceMetrics.h"
+#include "VideoCommon/Present.h"
 #include "VideoCommon/VideoBackendBase.h"
 #include "VideoCommon/VideoEvents.h"
 
@@ -103,6 +106,7 @@ static std::vector<StateChangedCallbackFunc> s_on_state_changed_callbacks;
 
 static std::thread s_cpu_thread;
 static bool s_is_throttler_temp_disabled = false;
+static std::atomic<double> s_last_actual_emulation_speed{1.0};
 static bool s_frame_step = false;
 static std::atomic<bool> s_stop_frame_step;
 
@@ -113,8 +117,6 @@ static std::atomic<State> s_state = State::Uninitialized;
 #ifdef USE_MEMORYWATCHER
 static std::unique_ptr<MemoryWatcher> s_memory_watcher;
 #endif
-
-void Callback_FramePresented(const PresentInfo& present_info);
 
 struct HostJob
 {
@@ -132,8 +134,16 @@ static thread_local bool tls_is_host_thread = false;
 static void EmuThread(Core::System& system, std::unique_ptr<BootParameters> boot,
                       WindowSystemInfo wsi);
 
-static Common::EventHook s_frame_presented =
-    AfterPresentEvent::Register(&Core::Callback_FramePresented, "Core Frame Presented");
+static Common::EventHook s_frame_presented = AfterPresentEvent::Register(
+    [](auto& present_info) {
+      const double last_speed_denominator = g_perf_metrics.GetLastSpeedDenominator();
+      // The denominator should always be > 0 but if it's not, just return 1
+      const double last_speed = last_speed_denominator > 0.0 ? (1.0 / last_speed_denominator) : 1.0;
+
+      if (present_info.reason != PresentInfo::PresentReason::VideoInterfaceDuplicate)
+        Core::Callback_FramePresented(last_speed);
+    },
+    "Core Frame Presented");
 
 bool GetIsThrottlerTempDisabled()
 {
@@ -143,6 +153,11 @@ bool GetIsThrottlerTempDisabled()
 void SetIsThrottlerTempDisabled(bool disable)
 {
   s_is_throttler_temp_disabled = disable;
+}
+
+double GetActualEmulationSpeed()
+{
+  return s_last_actual_emulation_speed;
 }
 
 void FrameUpdateOnCPUThread()
@@ -280,7 +295,7 @@ void Stop(Core::System& system)  // - Hammertime!
 
   s_state.store(State::Stopping);
 
-  NotifyStateChanged(State::Stopping);
+  CallOnStateChangedCallbacks(State::Stopping);
 
   // Dump left over jobs
   HostDispatchJobs(system);
@@ -295,13 +310,15 @@ void Stop(Core::System& system)  // - Hammertime!
 
   if (system.IsDualCoreMode())
   {
-    // FIFO processing should now exit so that EmuThread()
+    // Video_EnterLoop() should now exit so that EmuThread()
     // will continue concurrently with the rest of the commands
     // in this function. We no longer rely on Postmessage.
     INFO_LOG_FMT(CONSOLE, "{}", StopMessage(true, "Wait for Video Loop to exit ..."));
 
-    system.GetFifo().ExitGpuLoop();
+    g_video_backend->Video_ExitLoop();
   }
+
+  s_last_actual_emulation_speed = 1.0;
 }
 
 void DeclareAsCPUThread()
@@ -469,11 +486,11 @@ static void FifoPlayerThread(Core::System& system, const std::optional<std::stri
 static void EmuThread(Core::System& system, std::unique_ptr<BootParameters> boot,
                       WindowSystemInfo wsi)
 {
-  NotifyStateChanged(State::Starting);
+  CallOnStateChangedCallbacks(State::Starting);
   Common::ScopeGuard flag_guard{[] {
     s_state.store(State::Uninitialized);
 
-    NotifyStateChanged(State::Uninitialized);
+    CallOnStateChangedCallbacks(State::Uninitialized);
 
     INFO_LOG_FMT(CONSOLE, "Stop\t\t---- Shutdown complete ----");
   }};
@@ -526,7 +543,11 @@ static void EmuThread(Core::System& system, std::unique_ptr<BootParameters> boot
     }
   }};
 
-  // Wiimote input config is loaded in OnESTitleChanged
+  // Load Wiimotes - only if we are booting in Wii mode
+  if (system.IsWii() && !Config::Get(Config::MAIN_BLUETOOTH_PASSTHROUGH_ENABLED))
+  {
+    Wiimote::LoadConfig();
+  }
 
   FreeLook::LoadInputConfig();
 
@@ -591,7 +612,7 @@ static void EmuThread(Core::System& system, std::unique_ptr<BootParameters> boot
   system.GetPowerPC().SetMode(PowerPC::CoreMode::Interpreter);
 
   // Determine the CPU thread function
-  void (*cpuThreadFunc)(Core::System& system, const std::optional<std::string>& savestate_path,
+  void (*cpuThreadFunc)(Core::System & system, const std::optional<std::string>& savestate_path,
                         bool delete_savestate);
   if (std::holds_alternative<BootParameters::DFF>(boot->parameters))
     cpuThreadFunc = FifoPlayerThread;
@@ -713,7 +734,7 @@ void SetState(Core::System& system, State state, bool report_state_change,
   // Certain callers only change the state momentarily. Sending a callback for them causes
   // unwanted updates, such as the Pause/Play button flickering between states on frame advance.
   if (report_state_change)
-    NotifyStateChanged(GetState(system));
+    CallOnStateChangedCallbacks(GetState(system));
 }
 
 State GetState(Core::System& system)
@@ -739,17 +760,15 @@ static std::string GenerateScreenshotFolderPath()
   return path;
 }
 
-static std::optional<std::string> GenerateScreenshotName()
+static std::string GenerateScreenshotName()
 {
   // append gameId, path only contains the folder here.
   const std::string path_prefix =
       GenerateScreenshotFolderPath() + SConfig::GetInstance().GetGameID();
 
   const std::time_t cur_time = std::time(nullptr);
-  const auto local_time = Common::LocalTime(cur_time);
-  if (!local_time)
-    return std::nullopt;
-  const std::string base_name = fmt::format("{}_{:%Y-%m-%d_%H-%M-%S}", path_prefix, *local_time);
+  const std::string base_name =
+      fmt::format("{}_{:%Y-%m-%d_%H-%M-%S}", path_prefix, fmt::localtime(cur_time));
 
   // First try a filename without any suffixes, if already exists then append increasing numbers
   std::string name = fmt::format("{}.png", base_name);
@@ -765,9 +784,7 @@ static std::optional<std::string> GenerateScreenshotName()
 void SaveScreenShot()
 {
   const Core::CPUThreadGuard guard(Core::System::GetInstance());
-  std::optional<std::string> name = GenerateScreenshotName();
-  if (name)
-    g_frame_dumper->SaveScreenshot(*name);
+  g_frame_dumper->SaveScreenshot(GenerateScreenshotName());
 }
 
 void SaveScreenShot(std::string_view name)
@@ -815,8 +832,7 @@ static bool PauseAndLock(Core::System& system, bool do_lock, bool unpause_on_unl
   return was_unpaused;
 }
 
-void RunOnCPUThread(Core::System& system, Common::MoveOnlyFunction<void()> function,
-                    bool wait_for_completion)
+void RunOnCPUThread(Core::System& system, std::function<void()> function, bool wait_for_completion)
 {
   // If the CPU thread is not running, assume there is no active CPU thread we can race against.
   if (!IsRunning(system) || IsCPUThread())
@@ -857,14 +873,13 @@ void RunOnCPUThread(Core::System& system, Common::MoveOnlyFunction<void()> funct
 
 // --- Callbacks for backends / engine ---
 
-// Called from Renderer::Swap (GPU thread) when a frame is presented to the host screen.
-void Callback_FramePresented(const PresentInfo& present_info)
+// Called from Renderer::Swap (GPU thread) when a new (non-duplicate)
+// frame is presented to the host screen
+void Callback_FramePresented(double actual_emulation_speed)
 {
   g_perf_metrics.CountFrame();
 
-  if (present_info.reason == PresentInfo::PresentReason::VideoInterfaceDuplicate)
-    return;
-
+  s_last_actual_emulation_speed = actual_emulation_speed;
   s_stop_frame_step.store(true);
 }
 
@@ -884,7 +899,7 @@ void Callback_NewField(Core::System& system)
     {
       s_frame_step = false;
       system.GetCPU().Break();
-      NotifyStateChanged(Core::GetState(system));
+      CallOnStateChangedCallbacks(Core::GetState(system));
     }
   }
 
@@ -949,14 +964,13 @@ bool RemoveOnStateChangedCallback(int* handle)
   return false;
 }
 
-void NotifyStateChanged(Core::State state)
+void CallOnStateChangedCallbacks(Core::State state)
 {
   for (const StateChangedCallbackFunc& on_state_changed_callback : s_on_state_changed_callbacks)
   {
     if (on_state_changed_callback)
       on_state_changed_callback(state);
   }
-  g_perf_metrics.OnEmulationStateChanged(state);
 }
 
 void UpdateWantDeterminism(Core::System& system, bool initial)

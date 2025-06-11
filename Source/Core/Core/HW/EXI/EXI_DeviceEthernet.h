@@ -8,7 +8,6 @@
 #include <mutex>
 #include <thread>
 #include <vector>
-#include "SFML/Network/IpAddress.hpp"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -216,7 +215,7 @@ class CEXIETHERNET : public IEXIDevice
 {
 public:
   CEXIETHERNET(Core::System& system, BBADeviceType type);
-  ~CEXIETHERNET() override;
+  virtual ~CEXIETHERNET();
   void SetCS(int cs) override;
   bool IsPresent() const override;
   bool IsInterruptSet() override;
@@ -281,7 +280,7 @@ private:
   {
     u32 word;
 
-    void set(u32 const next_page, u32 const packet_length, u32 const status)
+    inline void set(u32 const next_page, u32 const packet_length, u32 const status)
     {
       word = 0;
       word |= (status & 0xff) << 24;
@@ -290,7 +289,10 @@ private:
     }
   };
 
-  u16 page_ptr(int const index) const { return ((u16)mBbaMem[index + 1] << 8) | mBbaMem[index]; }
+  inline u16 page_ptr(int const index) const
+  {
+    return ((u16)mBbaMem[index + 1] << 8) | mBbaMem[index];
+  }
 
   bool IsMXCommand(u32 const data);
   bool IsWriteCommand(u32 const data);
@@ -411,7 +413,7 @@ private:
 #if defined(WIN32) || defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) ||          \
     defined(__OpenBSD__) || defined(__NetBSD__) || defined(__HAIKU__)
     sf::UdpSocket m_sf_socket;
-    sf::IpAddress m_sf_recipient_ip = sf::IpAddress::Any;
+    sf::IpAddress m_sf_recipient_ip;
     char m_in_frame[9004]{};
     char m_out_frame[9004]{};
     std::thread m_read_thread;

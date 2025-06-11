@@ -129,8 +129,6 @@ public:
   };
   static_assert(sizeof(DataFormat) == 6, "Wrong size");
 
-  using DesiredState = DataFormat;
-
   static constexpr int CAL_STICK_BITS = 8;
   static constexpr int CAL_TRIGGER_BITS = 8;
 

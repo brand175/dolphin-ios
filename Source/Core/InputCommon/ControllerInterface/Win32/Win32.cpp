@@ -31,7 +31,7 @@ class InputBackend final : public ciface::InputBackend
 {
 public:
   InputBackend(ControllerInterface* controller_interface);
-  ~InputBackend() override;
+  ~InputBackend();
 
   void PopulateDevices() override;
   void HandleWindowChange() override;
