@@ -179,6 +179,7 @@
 		B9EC28382D21D429000FAE09 /* ControllersTouchscreenViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = B9EC28372D21D429000FAE09 /* ControllersTouchscreenViewController.mm */; };
 		B9EC283A2D21DA56000FAE09 /* TCWiiTouchIRMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9EC28392D21DA56000FAE09 /* TCWiiTouchIRMode.swift */; };
 		B9EC283D2D21DE2F000FAE09 /* ControllersTouchscreenIRModeViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = B9EC283C2D21DE2F000FAE09 /* ControllersTouchscreenIRModeViewController.mm */; };
+		B9F41C3C2DC53699006D2434 /* cacert.pem in Resources */ = {isa = PBXBuildFile; fileRef = B9F41C3B2DC53699006D2434 /* cacert.pem */; };
 		B9FCB7B9289670830020E233 /* JitManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B9FCB7B8289670830020E233 /* JitManager.m */; };
 		B9FCB7BC289672830020E233 /* JitManager+Debugger.m in Sources */ = {isa = PBXBuildFile; fileRef = B9FCB7BB289672830020E233 /* JitManager+Debugger.m */; };
 		B9FCB7BE28967C130020E233 /* JitAcquisitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9FCB7BD28967C130020E233 /* JitAcquisitionService.swift */; };
@@ -487,6 +488,7 @@
 		B99137C5288327BB00588446 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/ConfigSettings.strings; sourceTree = "<group>"; };
 		B99137C728832A0800588446 /* LocalizationUtil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LocalizationUtil.h; sourceTree = "<group>"; };
 		B99137C828832A0800588446 /* LocalizationUtil.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LocalizationUtil.m; sourceTree = "<group>"; };
+		B9A0EBC32DC3E13E00F929BA /* SetUpPython.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = SetUpPython.sh; sourceTree = "<group>"; };
 		B9B1483429636565002C4BE7 /* CreateIpa.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = CreateIpa.sh; sourceTree = "<group>"; };
 		B9B1483729642C75002C4BE7 /* UpdateRequiredNotice.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = UpdateRequiredNotice.xib; sourceTree = "<group>"; };
 		B9B1483A29642CB8002C4BE7 /* UpdateRequiredNoticeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UpdateRequiredNoticeViewController.m; sourceTree = "<group>"; };
@@ -547,6 +549,7 @@
 		B9EC28392D21DA56000FAE09 /* TCWiiTouchIRMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TCWiiTouchIRMode.swift; sourceTree = "<group>"; };
 		B9EC283B2D21DE2F000FAE09 /* ControllersTouchscreenIRModeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ControllersTouchscreenIRModeViewController.h; sourceTree = "<group>"; };
 		B9EC283C2D21DE2F000FAE09 /* ControllersTouchscreenIRModeViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ControllersTouchscreenIRModeViewController.mm; sourceTree = "<group>"; };
+		B9F41C3B2DC53699006D2434 /* cacert.pem */ = {isa = PBXFileReference; lastKnownFileType = text; path = cacert.pem; sourceTree = "<group>"; };
 		B9FCB7B7289670830020E233 /* JitManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JitManager.h; sourceTree = "<group>"; };
 		B9FCB7B8289670830020E233 /* JitManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JitManager.m; sourceTree = "<group>"; };
 		B9FCB7BA289672830020E233 /* JitManager+Debugger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "JitManager+Debugger.h"; sourceTree = "<group>"; };
@@ -1034,6 +1037,7 @@
 		B9476B2127F2357B009C0A4B /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
+				B9A0EBC32DC3E13E00F929BA /* SetUpPython.sh */,
 				B9476B2227F235A0009C0A4B /* BuildCore.sh */,
 				B97E4B642966480300B3EE9C /* CreateDeb.sh */,
 				B9B1483429636565002C4BE7 /* CreateIpa.sh */,
@@ -1047,6 +1051,7 @@
 		B950CA922846A10400F45219 /* Assets */ = {
 			isa = PBXGroup;
 			children = (
+				B9F41C3B2DC53699006D2434 /* cacert.pem */,
 				B97492482960F64300794509 /* DefaultPreferences.plist */,
 				B97E4B5929657BCB00B3EE9C /* GoogleService-Info.plist */,
 				B96C5DC82CFE4B200046C029 /* Logger.ini */,
@@ -1737,6 +1742,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B9DC3E0F27EFBD2F0084DAA4 /* Build configuration list for PBXNativeTarget "DolphiniOS" */;
 			buildPhases = (
+				B9A0EBC42DC3E1B500F929BA /* ShellScript */,
 				B9476B2327F23920009C0A4B /* Build Dolphin Core */,
 				B9DC3DF227EFBD2C0084DAA4 /* Sources */,
 				B9DC3DF327EFBD2C0084DAA4 /* Frameworks */,
@@ -1848,6 +1854,7 @@
 				B9B2C621288DB62D00CB6569 /* TCClassicWiiPad.xib in Resources */,
 				B9114F972893C5E600B9C57A /* DebugSettings.storyboard in Resources */,
 				B9DC3E0427EFBD2D0084DAA4 /* Main.storyboard in Resources */,
+				B9F41C3C2DC53699006D2434 /* cacert.pem in Resources */,
 				B904ACE828866E2D008B6BE9 /* ControllersSettings.storyboard in Resources */,
 				B96C5DC92CFE4B200046C029 /* Logger.ini in Resources */,
 				B933EDC327F8E215004D7DD7 /* Assets.xcassets in Resources */,
@@ -1935,7 +1942,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/usr/bin/python3 \"$PROJECT_DIR/Project/Scripts/UpdateCoreStrings.py\" \"$PROJECT_DIR/../../../Languages/po/\" \"$PROJECT_DIR/Common/UI/Localization\"\n";
+			shellScript = "\"$PROJECT_DIR/venv/bin/python3\" \"$PROJECT_DIR/Project/Scripts/UpdateCoreStrings.py\" \"$PROJECT_DIR/../../../Languages/po/\" \"$PROJECT_DIR/Common/UI/Localization\"\n";
 		};
 		B99137B428829F1400588446 /* Transfer Core Strings to Storyboard Strings */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1953,7 +1960,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/usr/bin/python3 \"$PROJECT_DIR/Project/Scripts/TransferCoreStringsToStoryboard.py\" \"$PROJECT_DIR/DolphiniOS\" \"$PROJECT_DIR/Common/UI/Localization/\"\n";
+			shellScript = "\"$PROJECT_DIR/venv/bin/python3\" \"$PROJECT_DIR/Project/Scripts/TransferCoreStringsToStoryboard.py\" \"$PROJECT_DIR/DolphiniOS\" \"$PROJECT_DIR/Common/UI/Localization/\"\n";
+		};
+		B9A0EBC42DC3E1B500F929BA /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$PROJECT_DIR/Project/Scripts/SetUpPython.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2860,7 +2884,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 4.0.0b8;
+				MARKETING_VERSION = 4.0.0b9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -2951,7 +2975,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 4.0.0b8;
+				MARKETING_VERSION = 4.0.0b9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -3041,7 +3065,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 4.0.0b8;
+				MARKETING_VERSION = 4.0.0b9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -3131,7 +3155,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 4.0.0b8;
+				MARKETING_VERSION = 4.0.0b9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -3279,7 +3303,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 4.0.0b8;
+				MARKETING_VERSION = 4.0.0b9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -3313,7 +3337,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 4.0.0b8;
+				MARKETING_VERSION = 4.0.0b9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -3403,7 +3427,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 4.0.0b8;
+				MARKETING_VERSION = 4.0.0b9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -3493,7 +3517,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 4.0.0b8;
+				MARKETING_VERSION = 4.0.0b9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
