@@ -3,8 +3,6 @@
 
 #include "VideoCommon/Assets/CustomAsset.h"
 
-#include <utility>
-
 namespace VideoCommon
 {
 CustomAsset::CustomAsset(std::shared_ptr<CustomAssetLibrary> library,
@@ -35,7 +33,7 @@ std::size_t CustomAsset::Unload()
 {
   std::lock_guard lk(m_info_lock);
   UnloadImpl();
-  return std::exchange(m_bytes_loaded, 0);
+  return m_bytes_loaded.exchange(0);
 }
 
 CustomAsset::TimeType CustomAsset::GetLastLoadedTime() const
@@ -51,6 +49,11 @@ std::size_t CustomAsset::GetHandle() const
 const CustomAssetLibrary::AssetID& CustomAsset::GetAssetId() const
 {
   return m_asset_id;
+}
+
+std::size_t CustomAsset::GetByteSizeInMemory() const
+{
+  return m_bytes_loaded;
 }
 
 }  // namespace VideoCommon
