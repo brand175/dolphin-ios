@@ -33,6 +33,7 @@
 #include "IOS/USB/Emulated/Infinity.h"
 #include "IOS/USB/Emulated/Skylanders/Skylander.h"
 #include "IOS/USB/USBScanner.h"
+#include "VideoCommon/Assets/CustomAssetLoader.h"
 #include "VideoCommon/CommandProcessor.h"
 #include "VideoCommon/Fifo.h"
 #include "VideoCommon/GeometryShaderManager.h"
@@ -95,6 +96,7 @@ struct System::Impl
   VideoInterface::VideoInterfaceManager m_video_interface;
   Interpreter m_interpreter;
   JitInterface m_jit_interface;
+  VideoCommon::CustomAssetLoader m_custom_asset_loader;
   FifoPlayer m_fifo_player;
   FifoRecorder m_fifo_recorder;
   Movie::MovieManager m_movie;
@@ -339,4 +341,8 @@ VideoInterface::VideoInterfaceManager& System::GetVideoInterface() const
   return m_impl->m_video_interface;
 }
 
+VideoCommon::CustomAssetLoader& System::GetCustomAssetLoader() const
+{
+  return m_impl->m_custom_asset_loader;
+}
 }  // namespace Core
