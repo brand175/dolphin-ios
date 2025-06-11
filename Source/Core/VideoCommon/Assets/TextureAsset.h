@@ -13,11 +13,11 @@
 
 namespace VideoCommon
 {
-struct TextureAndSamplerData
+struct TextureData
 {
   static bool FromJson(const CustomAssetLibrary::AssetID& asset_id, const picojson::object& json,
-                       TextureAndSamplerData* data);
-  static void ToJson(picojson::object* obj, const TextureAndSamplerData& data);
+                       TextureData* data);
+  static void ToJson(picojson::object* obj, const TextureData& data);
   enum class Type
   {
     Type_Undefined,
@@ -30,10 +30,14 @@ struct TextureAndSamplerData
   SamplerState m_sampler;
 };
 
-class TextureAsset final : public CustomLoadableAsset<CustomTextureData>
+class GameTextureAsset final : public CustomLoadableAsset<TextureData>
 {
 public:
   using CustomLoadableAsset::CustomLoadableAsset;
+
+  // Validates that the game texture matches the native dimensions provided
+  // Callees are expected to call this once the data is loaded
+  bool Validate(u32 native_width, u32 native_height) const;
 
 private:
   CustomAssetLibrary::LoadInfo LoadImpl(const CustomAssetLibrary::AssetID& asset_id) override;
@@ -41,8 +45,8 @@ private:
 }  // namespace VideoCommon
 
 template <>
-struct fmt::formatter<VideoCommon::TextureAndSamplerData::Type>
-    : EnumFormatter<VideoCommon::TextureAndSamplerData::Type::Type_Max>
+struct fmt::formatter<VideoCommon::TextureData::Type>
+    : EnumFormatter<VideoCommon::TextureData::Type::Type_Max>
 {
   constexpr formatter() : EnumFormatter({"Undefined", "Texture2D", "TextureCube"}) {}
 };
