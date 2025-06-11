@@ -105,7 +105,7 @@ std::string GetDefaultSoundBackend()
 #endif
 
 #if defined(IPHONEOS)
-    return = BACKEND_COREAUDIO;
+    return BACKEND_COREAUDIO;
 #endif
 
 #if defined(__linux__)
