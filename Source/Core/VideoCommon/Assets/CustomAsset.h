@@ -17,9 +17,6 @@ namespace VideoCommon
 class CustomAsset
 {
 public:
-  using ClockType = std::chrono::steady_clock;
-  using TimeType = ClockType::time_point;
-
   CustomAsset(std::shared_ptr<CustomAssetLibrary> library,
               const CustomAssetLibrary::AssetID& asset_id, u64 session_id);
   virtual ~CustomAsset() = default;
@@ -35,8 +32,13 @@ public:
   // returns the number of bytes unloaded
   std::size_t Unload();
 
+  // Queries the last time the asset was modified or standard epoch time
+  // if the asset hasn't been modified yet
+  // Note: not thread safe, expected to be called by the loader
+  CustomAssetLibrary::TimeType GetLastWriteTime() const;
+
   // Returns the time that the data was last loaded
-  const TimeType& GetLastLoadedTime() const;
+  const CustomAssetLibrary::TimeType& GetLastLoadedTime() const;
 
   // Returns an id that uniquely identifies this asset
   const CustomAssetLibrary::AssetID& GetAssetId() const;
@@ -61,7 +63,7 @@ private:
 
   mutable std::mutex m_info_lock;
   std::size_t m_bytes_loaded = 0;
-  TimeType m_last_loaded_time = {};
+  CustomAssetLibrary::TimeType m_last_loaded_time = {};
 };
 
 // An abstract class that is expected to
@@ -113,7 +115,7 @@ template <typename AssetType>
 struct CachedAsset
 {
   std::shared_ptr<AssetType> m_asset;
-  CustomAsset::TimeType m_cached_write_time;
+  VideoCommon::CustomAssetLibrary::TimeType m_cached_write_time;
 };
 
 }  // namespace VideoCommon
